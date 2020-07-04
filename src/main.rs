@@ -9,7 +9,7 @@ fn main() {
         Err(_) => {}
     }
 
-    let source = include_str!("../setup.glade");
+    let source = include_str!("../ui/setup.glade");
     let builder = gtk::Builder::new_from_string(source);
 
     let window: gtk::Window = builder.get_object("window1").unwrap();
