@@ -9,7 +9,6 @@ fn init_user(name: &str, path: &str) {
     let yaml = serde_yaml::to_string(&map).unwrap();
     let mut file = std::fs::File::create(path).expect("Can't create user info file");
     file.write_all(yaml.as_bytes()).expect("Can't write data to file, userinfo.yaml");
-    println!("S");
 }
 
 fn capitzlize(s: String) -> String {
@@ -24,7 +23,7 @@ fn capitzlize(s: String) -> String {
 
 pub fn show_setup(b: gtk::Builder, path: String) {
     let window: gtk::Window = b.get_object("user_setup").unwrap();
-    window.connect_destroy( |_| std::process::exit(0));
+    // window.connect_destroy( |_| std::process::exit(0));s
     let user_entry: gtk::Entry = b.get_object("user_entry").unwrap();
     let env_user = std::env::var("USER")
             .expect("Enviroment variable USER not defined");
@@ -41,7 +40,8 @@ pub fn show_setup(b: gtk::Builder, path: String) {
         userinfo.push_str(&path);
         userinfo.push_str("/userinfo.yaml");
         init_user(gstr.as_str(), &userinfo);
-        w_clone.destroy()
+        w_clone.close();
+        crate::init_main(path.clone());
     } );
 
     window.show_all();

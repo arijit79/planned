@@ -1,5 +1,6 @@
 use gtk;
 mod show_setup;
+mod start_main;
 
 fn gen_config_path() -> String {
     let mut config = String::new();
@@ -15,6 +16,12 @@ fn gen_config_path() -> String {
     config
 }
 
+fn init_main(config_path: String) {
+    let main_src = include_str!("../ui/main.glade");
+    let main_builder = gtk::Builder::new_from_string(main_src);
+    start_main::start_main(main_builder, config_path);
+}
+
 fn main() {
     let e = gtk::init();
     match e {
@@ -27,7 +34,9 @@ fn main() {
     if ! std::path::Path::new(&userinfo_path).exists() {
         let source = include_str!("../ui/setup.glade");
         let builder = gtk::Builder::new_from_string(source);
-        show_setup::show_setup(builder, config_path);
+        show_setup::show_setup(builder, config_path.clone());
+    } else {
+        init_main(config_path);
     }
 
     gtk::main();
