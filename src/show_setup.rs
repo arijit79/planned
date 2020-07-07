@@ -23,7 +23,6 @@ fn capitzlize(s: String) -> String {
 
 pub fn show_setup(b: gtk::Builder, path: String) {
     let window: gtk::Window = b.get_object("user_setup").unwrap();
-    // window.connect_destroy( |_| std::process::exit(0));s
     let user_entry: gtk::Entry = b.get_object("user_entry").unwrap();
     let env_user = std::env::var("USER")
             .expect("Enviroment variable USER not defined");
