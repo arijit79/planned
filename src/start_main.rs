@@ -34,8 +34,15 @@ fn get_user<'a>(file: String) -> String{
     userinfo.get("user").expect("Key 'user' not found in userinfo.yaml ").clone()
 }
 
+pub fn init_add(b: gtk::Builder) {
+    let add_window: gtk::Window = b.get_object("add_window").unwrap();
+    let content: gtk::TextView = b.get_object("content").unwrap();
+    content.get
+    add_window.show_all();
+}
+
 pub fn start_main(b: gtk::Builder, dir: String) {
-    let win: gtk::Window = b.get_object("window1").unwrap();
+    let win: gtk::Window = b.get_object("main_window").unwrap();
     let titlebar: gtk::HeaderBar = b.get_object("titlebar").unwrap();
     let mut userinfo_file = String::new();
     userinfo_file.push_str(&dir);
@@ -43,7 +50,10 @@ pub fn start_main(b: gtk::Builder, dir: String) {
     let user = get_user(userinfo_file);
     titlebar.set_subtitle(Some(&user));
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
-    // notes.insert_with_values(Some(1), &[0, 1], &[&"Note 1", &"2020-07-06"]);
+    let add_button: gtk::Button = b.get_object("add_note").unwrap();
+    add_button.connect_clicked(move |_| {
+        init_add(b);
+    });
     add_records(notes, dir);
     win.connect_destroy(|_| std::process::exit(0));
     win.show_all();
