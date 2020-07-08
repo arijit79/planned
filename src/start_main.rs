@@ -7,13 +7,13 @@ use std::fs::File;
 fn get_word_count(buff: &gtk::TextBuffer) -> usize {
     let start = buff.get_start_iter();
     let end = buff.get_end_iter();
-    let gstring = buff.get_text(&start, &end, false);
+    let gstring = buff.get_text(&start, &end, true);
     let string = gstring.as_deref().unwrap();
-    let split_string: Vec<&str> = string.split(" ").collect();
-    split_string.len() - 1
+    let split_string = string.split_whitespace();
+    split_string.count()
 }
 
-pub fn add_records(l: gtk::ListStore, dir: String) {
+fn add_records(l: gtk::ListStore, dir: String) {
     let notes_dir = dir + "/notes/";
     let path = std::path::Path::new(&notes_dir);
     if ! path.exists() {
@@ -25,7 +25,10 @@ pub fn add_records(l: gtk::ListStore, dir: String) {
         fn_str.push_str(filename.to_str().unwrap());
         let mut f = File::open(fn_str).expect("Can't open file");
         let mut data = String::new();
-        f.read_to_string(&mut data);
+        match f.read_to_string(&mut data) {
+            Ok(_) => {},
+            Err(_) => { println!("Cannot read file") }
+        }
         let note: BTreeMap<String, String> = serde_yaml::from_str(&data)
             .expect("Cannot get valid data from the notes dir");
         let title = note.get("title").unwrap();
@@ -58,7 +61,7 @@ pub fn init_add(b: gtk::Builder) {
     buffer.connect_property_cursor_position_notify(move |tb| {
         let text_iter = tb.get_iter_at_mark(&tb.get_insert().unwrap());
         char_count.set_text(&format!("Chars: {}", tb.get_char_count()));
-        word_count.set_text(&format!("Wordss: {}", get_word_count(&tb)));
+        word_count.set_text(&format!("Words: {}", get_word_count(&tb)));
         line_count.set_text(&format!("Lines: {}", tb.get_line_count()));
         line_no.set_text(&format!("Line: {}", text_iter.get_line()));
         col_no.set_text(&format!("Col: {}", text_iter.get_line_offset()));
