@@ -1,6 +1,7 @@
 use gtk;
 mod show_setup;
 mod start_main;
+mod util;
 
 fn gen_config_path() -> String {
     let mut config = String::new();

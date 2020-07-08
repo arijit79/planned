@@ -13,8 +13,8 @@ fn get_word_count(buff: &gtk::TextBuffer) -> usize {
     split_string.count()
 }
 
-fn add_records(l: gtk::ListStore, dir: String) {
-    let notes_dir = dir + "/notes/";
+fn add_records(l: gtk::ListStore, dir: &str) {
+    let notes_dir = dir.to_string() + "/notes/";
     let path = std::path::Path::new(&notes_dir);
     if ! path.exists() {
         std::fs::create_dir(path).expect("Unable to initialize notes directory");
@@ -46,7 +46,7 @@ fn get_user<'a>(file: String) -> String{
     userinfo.get("user").expect("Key 'user' not found in userinfo.yaml ").clone()
 }
 
-pub fn init_add(b: gtk::Builder) {
+pub fn init_add(b: gtk::Builder, path: String) {
     let add_window: gtk::Window = b.get_object("add_window").unwrap();
     let content: gtk::TextView = b.get_object("content").unwrap();
     let buffer = content.get_buffer().unwrap();
@@ -57,7 +57,7 @@ pub fn init_add(b: gtk::Builder) {
     let word_count: gtk::Label = b.get_object("word_count").unwrap();
     let line_count: gtk::Label = b.get_object("line_count").unwrap();
 
-    add_window.show_all();
+    let save: gtk::Button = b.get_object("save_button").unwrap();
     buffer.connect_property_cursor_position_notify(move |tb| {
         let text_iter = tb.get_iter_at_mark(&tb.get_insert().unwrap());
         char_count.set_text(&format!("Chars: {}", tb.get_char_count()));
@@ -66,6 +66,16 @@ pub fn init_add(b: gtk::Builder) {
         line_no.set_text(&format!("Line: {}", text_iter.get_line()));
         col_no.set_text(&format!("Col: {}", text_iter.get_line_offset()));
     });
+
+    save.connect_clicked(move |_| {
+        let start = buffer.get_start_iter();
+        let end = buffer.get_end_iter();
+        let gstring = buffer.get_text(&start, &end, true);
+        let string = gstring.as_deref().unwrap();
+        crate::util::save(string, path.clone());
+    });
+
+    add_window.show_all();
 }
 
 pub fn start_main(b: gtk::Builder, dir: String) {
@@ -78,10 +88,10 @@ pub fn start_main(b: gtk::Builder, dir: String) {
     titlebar.set_subtitle(Some(&user));
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     let add_button: gtk::Button = b.get_object("add_note").unwrap();
+    add_records(notes, &dir);
     add_button.connect_clicked(move |_| {
-        init_add(b.clone());
+        init_add(b.clone(), dir.clone());
     });
-    add_records(notes, dir);
     win.connect_destroy(|_| std::process::exit(0));
     win.show_all();
 }
