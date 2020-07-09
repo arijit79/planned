@@ -4,6 +4,30 @@ use std::collections::BTreeMap;
 use std::io::prelude::*;
 use std::fs::File;
 
+struct Note {
+    title: String,
+    date: String,
+    file: String
+}
+
+impl Note {
+    fn new(filen: &str) -> Note {
+        let mut f = File::open(filen).expect("Can't open file");
+        let mut data = String::new();
+        f.read_to_string(&mut data).expect("Error reading notes file");
+
+        let note: BTreeMap<String, String> = serde_yaml::from_str(&data)
+            .expect("Cannot get valid data from the notes dir");
+        let title = note.get("title").unwrap().to_string();
+        let date = note.get("date").unwrap().to_string();
+
+        Note {title, date, file: filen.to_string()}
+    }
+    fn on_list_store(&self, l: &gtk::ListStore, pos: usize) {
+        l.insert_with_values(Some(pos as u32), &[0, 1], &[&self.title, &self.date]);
+    }
+}
+
 pub fn add_records(l: gtk::ListStore, dir: &str) {
     l.clear();
     let notes_dir = dir.to_string() + "/notes/";
@@ -15,17 +39,8 @@ pub fn add_records(l: gtk::ListStore, dir: &str) {
         let filename = file.unwrap().file_name();
         let mut fn_str = String::from(&notes_dir);
         fn_str.push_str(filename.to_str().unwrap());
-        let mut f = File::open(fn_str).expect("Can't open file");
-        let mut data = String::new();
-        match f.read_to_string(&mut data) {
-            Ok(_) => {},
-            Err(_) => { println!("Cannot read file") }
-        }
-        let note: BTreeMap<String, String> = serde_yaml::from_str(&data)
-            .expect("Cannot get valid data from the notes dir");
-        let title = note.get("title").unwrap();
-        let date = note.get("date").unwrap();
-        l.insert_with_values(Some(count as u32), &[0, 1], &[title, date]);
+        let note = Note::new(&fn_str);
+        note.on_list_store(&l, count);
     }
 }
 
