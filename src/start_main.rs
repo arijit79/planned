@@ -4,16 +4,8 @@ use std::collections::BTreeMap;
 use std::io::prelude::*;
 use std::fs::File;
 
-fn get_word_count(buff: &gtk::TextBuffer) -> usize {
-    let start = buff.get_start_iter();
-    let end = buff.get_end_iter();
-    let gstring = buff.get_text(&start, &end, true);
-    let string = gstring.as_deref().unwrap();
-    let split_string = string.split_whitespace();
-    split_string.count()
-}
-
-fn add_records(l: gtk::ListStore, dir: &str) {
+pub fn add_records(l: gtk::ListStore, dir: &str) {
+    l.clear();
     let notes_dir = dir.to_string() + "/notes/";
     let path = std::path::Path::new(&notes_dir);
     if ! path.exists() {
@@ -46,38 +38,6 @@ fn get_user<'a>(file: String) -> String{
     userinfo.get("user").expect("Key 'user' not found in userinfo.yaml ").clone()
 }
 
-pub fn init_add(b: gtk::Builder, path: String) {
-    let add_window: gtk::Window = b.get_object("add_window").unwrap();
-    let content: gtk::TextView = b.get_object("content").unwrap();
-    let buffer = content.get_buffer().unwrap();
-    let line_no: gtk::Label = b.get_object("line_no").unwrap();
-    let col_no: gtk::Label = b.get_object("col_no").unwrap();
-
-    let char_count: gtk::Label = b.get_object("char_count").unwrap();
-    let word_count: gtk::Label = b.get_object("word_count").unwrap();
-    let line_count: gtk::Label = b.get_object("line_count").unwrap();
-
-    let save: gtk::Button = b.get_object("save_button").unwrap();
-    buffer.connect_property_cursor_position_notify(move |tb| {
-        let text_iter = tb.get_iter_at_mark(&tb.get_insert().unwrap());
-        char_count.set_text(&format!("Chars: {}", tb.get_char_count()));
-        word_count.set_text(&format!("Words: {}", get_word_count(&tb)));
-        line_count.set_text(&format!("Lines: {}", tb.get_line_count()));
-        line_no.set_text(&format!("Line: {}", text_iter.get_line()));
-        col_no.set_text(&format!("Col: {}", text_iter.get_line_offset()));
-    });
-
-    save.connect_clicked(move |_| {
-        let start = buffer.get_start_iter();
-        let end = buffer.get_end_iter();
-        let gstring = buffer.get_text(&start, &end, true);
-        let string = gstring.as_deref().unwrap();
-        crate::util::save(string, path.clone());
-    });
-
-    add_window.show_all();
-}
-
 pub fn start_main(b: gtk::Builder, dir: String) {
     let win: gtk::Window = b.get_object("main_window").unwrap();
     let titlebar: gtk::HeaderBar = b.get_object("titlebar").unwrap();
@@ -90,7 +50,7 @@ pub fn start_main(b: gtk::Builder, dir: String) {
     let add_button: gtk::Button = b.get_object("add_note").unwrap();
     add_records(notes, &dir);
     add_button.connect_clicked(move |_| {
-        init_add(b.clone(), dir.clone());
+        crate::add_window::init_add(b.clone(), dir.clone());
     });
     win.connect_destroy(|_| std::process::exit(0));
     win.show_all();
