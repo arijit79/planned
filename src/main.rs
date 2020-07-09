@@ -20,8 +20,7 @@ fn gen_config_path() -> String {
 
 fn init_main(config_path: String) {
     let main_src = include_str!("../ui/main.glade");
-    let main_builder = gtk::Builder::new_from_string(main_src);
-    start_main::start_main(main_builder, config_path);
+    start_main::start_main(main_src.to_string(), config_path);
 }
 
 fn main() {

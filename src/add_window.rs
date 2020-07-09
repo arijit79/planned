@@ -44,5 +44,9 @@ pub fn init_add(b: gtk::Builder, path: String) {
         crate::start_main::add_records(notes, &path)
     });
 
+    add_window.connect_destroy(|win| {
+        win.hide();
+    } );
+    // add_window.connect
     add_window.show_all();
 }
