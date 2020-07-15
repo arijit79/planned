@@ -5,6 +5,7 @@ use std::io::prelude::*;
 use std::collections::BTreeMap;
 use chrono;
 use chrono::prelude::*;
+use gtk::prelude::*;
 
 pub fn gen_fcode() -> u32 {
     let mut rng = rand::thread_rng();

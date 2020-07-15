@@ -9,7 +9,7 @@ fn get_word_count(buff: &gtk::TextBuffer) -> usize {
     split_string.count()
 }
 
-pub fn init_add(b: gtk::Builder, path: String) {
+pub fn init_add(b: gtk::Builder, path: String, notes: gtk::ListStore) {
     let add_window: gtk::Window = b.get_object("add_window").unwrap();
     let title: gtk::Entry = b.get_object("title").unwrap();
     let content: gtk::TextView = b.get_object("content").unwrap();
@@ -40,8 +40,7 @@ pub fn init_add(b: gtk::Builder, path: String) {
         let title_gstr = title.get_text().unwrap();
         let title_str = title_gstr.as_str();
         crate::util::save(string, title_str, path.clone(), rand_id);
-        let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
-        crate::start_main::add_records(&notes, &path)
+        crate::start_main::add_records(&notes, &path);
     });
 
     add_window.show_all();

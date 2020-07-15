@@ -64,11 +64,12 @@ pub fn start_main(glade: String, dir: String) {
     let user = get_user(userinfo_file);
     titlebar.set_subtitle(Some(&user));
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
+    let notes_clone = notes.clone();
     let add_button: gtk::Button = b.get_object("add_note").unwrap();
     add_records(&notes, &dir);
     add_button.connect_clicked(move |_| {
         let b = gtk::Builder::new_from_string(&glade);
-        crate::add_window::init_add(b, dir.clone());
+        crate::add_window::init_add(b, dir.clone(), notes_clone.clone());
     });
     let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
@@ -87,6 +88,11 @@ pub fn start_main(glade: String, dir: String) {
         let iter = selection.1;
         let text = model.get_value(&iter, 2).get::<String>().unwrap();
         notes.remove(&iter);
+        let r = std::fs::remove_file(text.unwrap());
+        match r {
+            Ok(_) => {},
+            Err(_) => eprintln!("Error deleting file")
+        }
     });
     win.show_all();
 }
