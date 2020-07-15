@@ -72,12 +72,16 @@ pub fn start_main(glade: String, dir: String) {
     });
     let notes_tree: gtk::TreeView = b.get_object("notes_tree")
                                             .unwrap();
+    let delete_button: gtk::Button = b.get_object("delete_button").unwrap();
+    notes_tree.set_activate_on_single_click(true);
     win.connect_destroy(|_| std::process::exit(0));
-    win.show_all();
     notes_tree.connect_row_activated(move |treeview, path, _| {
-        let model = treeview.get_model().unwrap();
-        let iter = model.get_iter(path).unwrap();
-        let text = model.get_value(&iter, 2).get::<String>().unwrap();
-        println!("{}", text.unwrap());
+        delete_button.set_sensitive(true);
     });
+
+    // let model = treeview.get_model().unwrap();
+    // let iter = model.get_iter(path).unwrap();
+    // let text = model.get_value(&iter, 2).get::<String>().unwrap();
+    // println!("{}", text.unwrap());
+    win.show_all();
 }

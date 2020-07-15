@@ -84,7 +84,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="delete_button">
                         <property name="label" translatable="yes">Delete</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
