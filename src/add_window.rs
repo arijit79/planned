@@ -41,7 +41,7 @@ pub fn init_add(b: gtk::Builder, path: String) {
         let title_str = title_gstr.as_str();
         crate::util::save(string, title_str, path.clone(), rand_id);
         let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
-        crate::start_main::add_records(notes, &path)
+        crate::start_main::add_records(&notes, &path)
     });
 
     add_window.show_all();

@@ -29,7 +29,7 @@ impl Note {
     }
 }
 
-pub fn add_records(l: gtk::ListStore, dir: &str) {
+pub fn add_records(l: &gtk::ListStore, dir: &str) {
     l.clear();
     let notes_dir = dir.to_string() + "/notes/";
     let path = std::path::Path::new(&notes_dir);
@@ -65,23 +65,28 @@ pub fn start_main(glade: String, dir: String) {
     titlebar.set_subtitle(Some(&user));
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     let add_button: gtk::Button = b.get_object("add_note").unwrap();
-    add_records(notes, &dir);
+    add_records(&notes, &dir);
     add_button.connect_clicked(move |_| {
         let b = gtk::Builder::new_from_string(&glade);
         crate::add_window::init_add(b, dir.clone());
     });
-    let notes_tree: gtk::TreeView = b.get_object("notes_tree")
-                                            .unwrap();
+    let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
+    let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
     let delete_button: gtk::Button = b.get_object("delete_button").unwrap();
+    let delete_clone = delete_button.clone();
     notes_tree.set_activate_on_single_click(true);
     win.connect_destroy(|_| std::process::exit(0));
     notes_tree.connect_row_activated(move |treeview, path, _| {
         delete_button.set_sensitive(true);
     });
+    delete_clone.connect_clicked(move |_| {
+        // let path = notes_tree.get_path();
+        let selection = notes_selection.get_selected().unwrap();
 
-    // let model = treeview.get_model().unwrap();
-    // let iter = model.get_iter(path).unwrap();
-    // let text = model.get_value(&iter, 2).get::<String>().unwrap();
-    // println!("{}", text.unwrap());
+        let model = notes_tree.get_model().unwrap();
+        let iter = selection.1;
+        let text = model.get_value(&iter, 2).get::<String>().unwrap();
+        notes.remove(&iter);
+    });
     win.show_all();
 }
