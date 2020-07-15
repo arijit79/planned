@@ -7,7 +7,7 @@ use std::fs::File;
 struct Note {
     title: String,
     date: String,
-    file: String
+    filen: String
 }
 
 impl Note {
@@ -21,10 +21,11 @@ impl Note {
         let title = note.get("title").unwrap().to_string();
         let date = note.get("date").unwrap().to_string();
 
-        Note {title, date, file: filen.to_string()}
+        Note {title, date, filen: filen.to_string()}
     }
     fn on_list_store(&self, l: &gtk::ListStore, pos: usize) {
-        l.insert_with_values(Some(pos as u32), &[0, 1], &[&self.title, &self.date]);
+        l.insert_with_values(Some(pos as u32), &[0, 1, 2],
+                                &[&self.title, &self.date, &self.filen]);
     }
 }
 
@@ -69,6 +70,14 @@ pub fn start_main(glade: String, dir: String) {
         let b = gtk::Builder::new_from_string(&glade);
         crate::add_window::init_add(b, dir.clone());
     });
+    let notes_tree: gtk::TreeView = b.get_object("notes_tree")
+                                            .unwrap();
     win.connect_destroy(|_| std::process::exit(0));
     win.show_all();
+    notes_tree.connect_row_activated(move |treeview, path, _| {
+        let model = treeview.get_model().unwrap();
+        let iter = model.get_iter(path).unwrap();
+        let text = model.get_value(&iter, 2).get::<String>().unwrap();
+        println!("{}", text.unwrap());
+    });
 }

@@ -28,6 +28,8 @@
       <column type="gchararray"/>
       <!-- column-name Creation -->
       <column type="gchararray"/>
+      <!-- column-name filename -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkWindow" id="main_window">
@@ -83,8 +85,9 @@
                     </child>
                     <child>
                       <object class="GtkButton">
-                        <property name="label" translatable="yes">Delete Note</property>
+                        <property name="label" translatable="yes">Delete</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">image2</property>
@@ -106,13 +109,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkTreeView">
+                  <object class="GtkTreeView" id="notes_tree">
+                    <property name="name">notes_tree</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="model">notes_list</property>
                     <property name="search_column">0</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection" id="notes_tree_selection"/>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn">
