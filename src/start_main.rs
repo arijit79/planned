@@ -75,24 +75,19 @@ pub fn start_main(glade: String, dir: String) {
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
     let delete_button: gtk::Button = b.get_object("delete_button").unwrap();
     let delete_clone = delete_button.clone();
+
     notes_tree.set_activate_on_single_click(true);
     win.connect_destroy(|_| std::process::exit(0));
-    notes_tree.connect_row_activated(move |treeview, path, _| {
+    notes_tree.connect_row_activated(move |_, _, _| {
         delete_button.set_sensitive(true);
     });
     delete_clone.connect_clicked(move |_| {
-        // let path = notes_tree.get_path();
-        let selection = notes_selection.get_selected().unwrap();
-
-        let model = notes_tree.get_model().unwrap();
-        let iter = selection.1;
-        let text = model.get_value(&iter, 2).get::<String>().unwrap();
-        notes.remove(&iter);
-        let r = std::fs::remove_file(text.unwrap());
-        match r {
-            Ok(_) => {},
-            Err(_) => eprintln!("Error deleting file")
-        }
+        crate::config_delete::init_delete(notes.clone(), notes_tree.clone(),
+                                                        notes_selection.clone());
     });
+
+
     win.show_all();
 }
+
+// // let path = notes_tree.get_path();

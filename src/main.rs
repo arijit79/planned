@@ -3,6 +3,7 @@ mod show_setup;
 mod start_main;
 mod util;
 mod add_window;
+mod config_delete;
 
 fn gen_config_path() -> String {
     let mut config = String::new();
