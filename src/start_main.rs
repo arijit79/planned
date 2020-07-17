@@ -65,7 +65,7 @@ pub fn start_main(glade: String, dir: String) {
     titlebar.set_subtitle(Some(&user));
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     let notes_clone = notes.clone();
-    let add_button: gtk::Button = b.get_object("add_note").unwrap();
+    let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
     add_records(&notes, &dir);
     add_button.connect_clicked(move |_| {
         let b = gtk::Builder::new_from_string(&glade);
@@ -73,7 +73,7 @@ pub fn start_main(glade: String, dir: String) {
     });
     let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
-    let delete_button: gtk::Button = b.get_object("delete_button").unwrap();
+    let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
     let delete_clone = delete_button.clone();
 
     notes_tree.set_activate_on_single_click(true);
