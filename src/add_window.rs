@@ -9,7 +9,8 @@ fn get_word_count(buff: &gtk::TextBuffer) -> usize {
     split_string.count()
 }
 
-pub fn init_add(b: gtk::Builder, path: String, notes: gtk::ListStore) {
+pub fn init_add(path: String, notes: gtk::ListStore) {
+    let b = gtk::Builder::new_from_string(include_str!("../ui/add_note.glade"));
     let add_window: gtk::Window = b.get_object("add_window").unwrap();
     let title: gtk::Entry = b.get_object("title").unwrap();
     let content: gtk::TextView = b.get_object("content").unwrap();

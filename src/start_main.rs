@@ -45,6 +45,15 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
     }
 }
 
+fn view_note(notes_tree: gtk::TreeView, selection: gtk::TreeSelection) ->
+(String, String) {
+    let selection = selection.get_selected().unwrap();
+    let model = notes_tree.get_model().unwrap();
+    let text = model.get_value(&selection.1, 2).get::<String>().unwrap();
+    let note = Note::new(&text.unwrap());
+    (note.title, note.date)
+}
+
 fn get_user<'a>(file: String) -> String{
     let mut f = File::open(file).expect("Can't open file userinfo.yaml");
     let mut data = String::new();
@@ -57,37 +66,40 @@ fn get_user<'a>(file: String) -> String{
 pub fn start_main(glade: String, dir: String) {
     let b = gtk::Builder::new_from_string(&glade);
     let win: gtk::Window = b.get_object("main_window").unwrap();
-    let titlebar: gtk::HeaderBar = b.get_object("titlebar").unwrap();
     let mut userinfo_file = String::new();
     userinfo_file.push_str(&dir);
     userinfo_file.push_str("/userinfo.yaml");
     let user = get_user(userinfo_file);
-    titlebar.set_subtitle(Some(&user));
+    b.get_object::<gtk::HeaderBar>("titlebar").unwrap().set_subtitle(Some(&user));
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     let notes_clone = notes.clone();
     let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
     add_records(&notes, &dir);
-    add_button.connect_clicked(move |_| {
-        let b = gtk::Builder::new_from_string(&glade);
-        crate::add_window::init_add(b, dir.clone(), notes_clone.clone());
-    });
     let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
     let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
     let delete_clone = delete_button.clone();
 
+    let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
+    let notes_tree_clone = notes_tree.clone();
+    let tree_sel = notes_selection.clone();
+
     notes_tree.set_activate_on_single_click(true);
     win.connect_destroy(|_| std::process::exit(0));
     notes_tree.connect_row_activated(move |_, _, _| {
         delete_button.set_sensitive(true);
+        notes_view.set_visible(true);
+        let data = view_note(notes_tree_clone.clone(), tree_sel.clone());
+        b.get_object::<gtk::Label>("note_title").unwrap()
+                        .set_text(&format!("Note Title: {}", data.0));
     });
     delete_clone.connect_clicked(move |_| {
         crate::config_delete::init_delete(notes.clone(), notes_tree.clone(),
                                                         notes_selection.clone());
     });
-
+    add_button.connect_clicked(move |_| {
+        crate::add_window::init_add(dir.clone(), notes_clone.clone());
+    });
 
     win.show_all();
 }
-
-// // let path = notes_tree.get_path();
