@@ -18,23 +18,21 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
     }
 }
 
-fn view_note(notes_tree: gtk::TreeView, selection: gtk::TreeSelection) ->
+fn view_note(selection: gtk::TreeSelection) ->
 (String, String, String) {
-    let selection = selection.get_selected().unwrap();
-    let model = notes_tree.get_model().unwrap();
-    let text = model.get_value(&selection.1, 2).get::<String>().unwrap();
+    let (model, iter) = selection.get_selected().unwrap();
+    let text = model.get_value(&iter, 2).get::<String>().unwrap();
     let note = Note::new(&text.unwrap());
     (note.title, note.date, note.content)
 }
 
 pub fn config_delete_buttons(b: &gtk::Builder,
-notes: gtk::ListStore, notes_tree: gtk::TreeView, notes_selection: gtk::TreeSelection)
+notes: gtk::ListStore, notes_selection: gtk::TreeSelection)
 -> gtk::ToolButton {
 
     let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
     delete_button.connect_clicked(move |_| {
-        crate::config_delete::init_delete(notes.clone(), notes_tree.clone(),
-                                                        notes_selection.clone());
+        crate::delete_window::init_delete(notes.clone(), notes_selection.clone());
     });
     delete_button
 }
@@ -62,15 +60,14 @@ pub fn start_main(glade: String, dir: String) {
 
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
 
-    let delete_button = config_delete_buttons(&b, notes.clone(), notes_tree.clone(),
-                                                notes_selection.clone());
+    let delete_button = config_delete_buttons(&b, notes.clone(), notes_selection.clone());
 
     notes_tree.set_activate_on_single_click(true);
     win.connect_destroy(|_| std::process::exit(0));
-    notes_tree.connect_row_activated(move |tree, _, _| {
+    notes_tree.connect_row_activated(move |_, _, _| {
         delete_button.set_sensitive(true);
         notes_view.set_visible(true);
-        let data = view_note(tree.clone(), notes_selection.clone());
+        let data = view_note(notes_selection.clone());
         b.get_object::<gtk::Label>("note_title").unwrap()
                         .set_text(&format!("Note Title:\t{}", data.0));
         b.get_object::<gtk::Label>("creation_date").unwrap()
