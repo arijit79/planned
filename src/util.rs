@@ -5,6 +5,32 @@ use std::io::prelude::*;
 use std::collections::BTreeMap;
 use chrono;
 use chrono::prelude::*;
+use gtk::prelude::*;
+
+pub struct Note {
+    pub title: String,
+    pub date: String,
+    pub filen: String
+}
+
+impl Note {
+    pub fn new(filen: &str) -> Note {
+        let mut f = File::open(filen).expect("Can't open file");
+        let mut data = String::new();
+        f.read_to_string(&mut data).expect("Error reading notes file");
+
+        let note: BTreeMap<String, String> = serde_yaml::from_str(&data)
+            .expect("Cannot get valid data from the notes dir");
+        let title = note.get("title").unwrap().to_string();
+        let date = note.get("date").unwrap().to_string();
+
+        Note {title, date, filen: filen.to_string()}
+    }
+    pub fn on_list_store(&self, l: &gtk::ListStore, pos: usize) {
+        l.insert_with_values(Some(pos as u32), &[0, 1, 2],
+                                &[&self.title, &self.date, &self.filen]);
+    }
+}
 
 pub fn gen_fcode() -> u32 {
     let mut rng = rand::thread_rng();

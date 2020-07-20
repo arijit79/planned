@@ -38,108 +38,51 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkBox">
+              <object class="GtkPaned">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">5</property>
                 <child>
-                  <object class="GtkToolbar">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="toolbar_style">both-horiz</property>
-                    <property name="icon_size">2</property>
-                    <child>
-                      <object class="GtkToolButton" id="add_note">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="is_important">True</property>
-                        <property name="label" translatable="yes">Add Note</property>
-                        <property name="use_underline">True</property>
-                        <property name="icon_name">list-add</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="homogeneous">True</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolButton" id="delete_button">
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">False</property>
-                        <property name="is_important">True</property>
-                        <property name="label" translatable="yes">Delete</property>
-                        <property name="use_underline">True</property>
-                        <property name="icon_name">list-remove</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="homogeneous">True</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkTreeView" id="notes_tree">
-                    <property name="name">notes_tree</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="model">notes_list</property>
-                    <property name="search_column">0</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="notes_tree_selection"/>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="min_width">100</property>
-                        <property name="title" translatable="yes">Title</property>
-                        <property name="alignment">0.5</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="title" translatable="yes">Creation Date</property>
-                        <property name="alignment">0.5</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">1</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox" id="notes_view">
-                    <property name="can_focus">False</property>
-                    <property name="no_show_all">True</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
                     <child>
-                      <object class="GtkLabel" id="note_title">
+                      <object class="GtkToolbar">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">label</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
+                        <property name="toolbar_style">both-horiz</property>
+                        <property name="icon_size">2</property>
+                        <child>
+                          <object class="GtkToolButton" id="add_note">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="is_important">True</property>
+                            <property name="label" translatable="yes">Add Note</property>
+                            <property name="use_underline">True</property>
+                            <property name="icon_name">list-add</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolButton" id="delete_button">
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">False</property>
+                            <property name="is_important">True</property>
+                            <property name="label" translatable="yes">Delete</property>
+                            <property name="use_underline">True</property>
+                            <property name="icon_name">list-remove</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -148,19 +91,113 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">label</property>
+                        <property name="can_focus">True</property>
+                        <property name="shadow_type">in</property>
+                        <child>
+                          <object class="GtkTreeView" id="notes_tree">
+                            <property name="name">notes_tree</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="model">notes_list</property>
+                            <property name="search_column">0</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection" id="notes_tree_selection"/>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="min_width">100</property>
+                                <property name="title" translatable="yes">Title</property>
+                                <property name="alignment">0.5</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="title" translatable="yes">Creation Date</property>
+                                <property name="alignment">0.5</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
+                  </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="notes_view">
+                    <property name="can_focus">False</property>
+                    <property name="no_show_all">True</property>
+                    <property name="margin_start">10</property>
+                    <property name="margin_end">10</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkTextView">
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="note_title">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">label</property>
+                            <property name="xalign">0.10000000149011612</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="creation_date">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">label</property>
+                            <property name="xalign">0.10000000149011612</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="pack_type">end</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkTextView" id="notes_content">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="editable">False</property>
@@ -174,10 +211,8 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="pack_type">end</property>
-                    <property name="position">2</property>
+                    <property name="resize">True</property>
+                    <property name="shrink">False</property>
                   </packing>
                 </child>
               </object>

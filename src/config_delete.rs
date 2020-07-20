@@ -1,7 +1,20 @@
 use gtk::prelude::*;
 
+pub fn config_delete_buttons(b: &gtk::Builder,
+notes: gtk::ListStore, notes_tree: gtk::TreeView, notes_selection: gtk::TreeSelection)
+-> gtk::ToolButton {
+
+    let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
+    delete_button.connect_clicked(move |_| {
+        crate::config_delete::init_delete(notes.clone(), notes_tree.clone(),
+                                                        notes_selection.clone());
+    });
+    delete_button
+}
+
 pub fn init_delete(notes: gtk::ListStore, notes_tree: gtk::TreeView,
-     notes_selection: gtk::TreeSelection) {
+    notes_selection: gtk::TreeSelection) {
+
     let src = include_str!("../ui/delete.glade");
     let b = gtk::Builder::new_from_string(src);
     let delete_confirm: gtk::Window = b.get_object("confirm_delete").unwrap();

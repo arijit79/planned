@@ -9,10 +9,16 @@ fn get_word_count(buff: &gtk::TextBuffer) -> usize {
     split_string.count()
 }
 
+pub fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
+    let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
+    add_button.connect_clicked(move |_| {
+        crate::add_window::init_add(data.0.clone(), data.1.clone());
+    });
+}
+
 pub fn init_add(path: String, notes: gtk::ListStore) {
     let b = gtk::Builder::new_from_string(include_str!("../ui/add_note.glade"));
-    let add_window: gtk::Window = b.get_object("add_window").unwrap();
-    let title: gtk::Entry = b.get_object("title").unwrap();
+    b.get_object::<gtk::Window>("add_window").unwrap().show_all();
     let content: gtk::TextView = b.get_object("content").unwrap();
     let buffer = content.get_buffer().unwrap();
     let line_no: gtk::Label = b.get_object("line_no").unwrap();
@@ -38,11 +44,10 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
         let end = buffer.get_end_iter();
         let gstring = buffer.get_text(&start, &end, true);
         let string = gstring.as_deref().unwrap();
-        let title_gstr = title.get_text().unwrap();
+        let title_gstr = b.get_object::<gtk::Entry>("title").unwrap()
+                                                    .get_text().unwrap();
         let title_str = title_gstr.as_str();
         crate::util::save(string, title_str, path.clone(), rand_id);
         crate::start_main::add_records(&notes, &path);
     });
-
-    add_window.show_all();
 }
