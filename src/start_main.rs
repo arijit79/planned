@@ -22,12 +22,12 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
 }
 
 fn view_note(notes_tree: gtk::TreeView, selection: gtk::TreeSelection) ->
-(String, String) {
+(String, String, String) {
     let selection = selection.get_selected().unwrap();
     let model = notes_tree.get_model().unwrap();
     let text = model.get_value(&selection.1, 2).get::<String>().unwrap();
     let note = Note::new(&text.unwrap());
-    (note.title, note.date)
+    (note.title, note.date, note.content)
 }
 
 fn get_user<'a>(file: String) -> String{
@@ -55,12 +55,12 @@ pub fn start_main(glade: String, dir: String) {
 
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
 
+    let delete_button = crate::config_delete::config_delete_buttons(&b, notes.clone(),
+                                                        notes_tree.clone(),
+                                                        notes_selection.clone());
     notes_tree.set_activate_on_single_click(true);
     win.connect_destroy(|_| std::process::exit(0));
     notes_tree.connect_row_activated(move |tree, _, _| {
-        let delete_button = crate::config_delete::config_delete_buttons(&b, notes.clone(),
-                                                            tree.clone(),
-                                                            notes_selection.clone());
         delete_button.set_sensitive(true);
         notes_view.set_visible(true);
         let data = view_note(tree.clone(), notes_selection.clone());
@@ -68,6 +68,8 @@ pub fn start_main(glade: String, dir: String) {
                         .set_text(&format!("Note Title:\t{}", data.0));
         b.get_object::<gtk::Label>("creation_date").unwrap()
                         .set_text(&format!("Creation Date:\t{}", data.1));
+        b.get_object::<gtk::TextBuffer>("textbuffer1").unwrap()
+                        .set_text(&format!("{}", data.2));
     });
     win.show_all();
 }

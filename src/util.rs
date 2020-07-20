@@ -10,6 +10,7 @@ use gtk::prelude::*;
 pub struct Note {
     pub title: String,
     pub date: String,
+    pub content: String,
     pub filen: String
 }
 
@@ -23,8 +24,9 @@ impl Note {
             .expect("Cannot get valid data from the notes dir");
         let title = note.get("title").unwrap().to_string();
         let date = note.get("date").unwrap().to_string();
+        let content =  note.get("content").unwrap().to_string();
 
-        Note {title, date, filen: filen.to_string()}
+        Note {title, date, content, filen: filen.to_string()}
     }
     pub fn on_list_store(&self, l: &gtk::ListStore, pos: usize) {
         l.insert_with_values(Some(pos as u32), &[0, 1, 2],
