@@ -1,8 +1,5 @@
 use gtk;
 use gtk::prelude::*;
-use std::collections::BTreeMap;
-use std::io::prelude::*;
-use std::fs::File;
 use crate::util::Note;
 
 pub fn add_records(l: &gtk::ListStore, dir: &str) {
@@ -30,13 +27,23 @@ fn view_note(notes_tree: gtk::TreeView, selection: gtk::TreeSelection) ->
     (note.title, note.date, note.content)
 }
 
-fn get_user<'a>(file: String) -> String{
-    let mut f = File::open(file).expect("Can't open file userinfo.yaml");
-    let mut data = String::new();
-    f.read_to_string(&mut data).expect("Can't read file");
-    let userinfo: BTreeMap<String, String> = serde_yaml::from_str(&data)
-                    .expect("No valid data found in userinfo,yaml");
-    userinfo.get("user").expect("Key 'user' not found in userinfo.yaml ").clone()
+pub fn config_delete_buttons(b: &gtk::Builder,
+notes: gtk::ListStore, notes_tree: gtk::TreeView, notes_selection: gtk::TreeSelection)
+-> gtk::ToolButton {
+
+    let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
+    delete_button.connect_clicked(move |_| {
+        crate::config_delete::init_delete(notes.clone(), notes_tree.clone(),
+                                                        notes_selection.clone());
+    });
+    delete_button
+}
+
+pub fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
+    let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
+    add_button.connect_clicked(move |_| {
+        crate::add_window::init_add(data.0.clone(), data.1.clone());
+    });
 }
 
 pub fn start_main(glade: String, dir: String) {
@@ -45,19 +52,19 @@ pub fn start_main(glade: String, dir: String) {
     let mut userinfo_file = String::new();
     userinfo_file.push_str(&dir);
     userinfo_file.push_str("/userinfo.yaml");
-    let user = get_user(userinfo_file);
+    let user = crate::util::get_user(userinfo_file);
     b.get_object::<gtk::HeaderBar>("titlebar").unwrap().set_subtitle(Some(&user));
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     add_records(&notes, &dir);
-    crate::add_window::config_add_button(&b, (dir.clone(), notes.clone()));
+    config_add_button(&b, (dir.clone(), notes.clone()));
     let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
 
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
 
-    let delete_button = crate::config_delete::config_delete_buttons(&b, notes.clone(),
-                                                        notes_tree.clone(),
-                                                        notes_selection.clone());
+    let delete_button = config_delete_buttons(&b, notes.clone(), notes_tree.clone(),
+                                                notes_selection.clone());
+
     notes_tree.set_activate_on_single_click(true);
     win.connect_destroy(|_| std::process::exit(0));
     notes_tree.connect_row_activated(move |tree, _, _| {

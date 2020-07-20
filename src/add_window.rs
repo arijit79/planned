@@ -9,13 +9,6 @@ fn get_word_count(buff: &gtk::TextBuffer) -> usize {
     split_string.count()
 }
 
-pub fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
-    let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
-    add_button.connect_clicked(move |_| {
-        crate::add_window::init_add(data.0.clone(), data.1.clone());
-    });
-}
-
 pub fn init_add(path: String, notes: gtk::ListStore) {
     let b = gtk::Builder::new_from_string(include_str!("../ui/add_note.glade"));
     b.get_object::<gtk::Window>("add_window").unwrap().show_all();

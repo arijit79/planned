@@ -53,3 +53,13 @@ pub fn save(text: &str, title: &str, path: String, rand_no: u32) {
     let yaml = serde_yaml::to_string(&map).unwrap();
     file.write_all(yaml.as_bytes()).expect("Cannot write to file");
 }
+
+
+pub fn get_user<'a>(file: String) -> String{
+    let mut f = File::open(file).expect("Can't open file userinfo.yaml");
+    let mut data = String::new();
+    f.read_to_string(&mut data).expect("Can't read file");
+    let userinfo: BTreeMap<String, String> = serde_yaml::from_str(&data)
+                    .expect("No valid data found in userinfo,yaml");
+    userinfo.get("user").expect("Key 'user' not found in userinfo.yaml ").clone()
+}
