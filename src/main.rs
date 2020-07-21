@@ -26,8 +26,7 @@ fn gen_config_path() -> String {
 
 fn init_main(config_path: String) {
     // Read the main.glade file and run it with start_main function
-    let main_src = include_str!("../ui/main.glade");
-    start_main::start_main(main_src.to_string(), config_path);
+    start_main::start_main(config_path);
 }
 
 fn main() {
