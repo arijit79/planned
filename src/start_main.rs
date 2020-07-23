@@ -40,15 +40,16 @@ fn view_note(selection: gtk::TreeSelection) ->
 }
 
 // Configure the delete button
-pub fn config_delete_buttons(b: &gtk::Builder,
-notes: gtk::ListStore, notes_selection: gtk::TreeSelection)
--> gtk::ToolButton {
+pub fn config_delete_buttons(b: &gtk::Builder, notes: gtk::ListStore,
+    notes_selection: gtk::TreeSelection, view: gtk::Box) -> gtk::ToolButton {
+
     // Get the delete button from the builder
     let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
     // configure is Functionality
     delete_button.connect_clicked(move |_| {
         // Initialize the delete window
-        crate::delete_window::init_delete(notes.clone(), notes_selection.clone());
+        crate::delete_window::init_delete(notes.clone(), notes_selection.clone(),
+                                            view.clone());
     });
     // Return the button
     delete_button
@@ -69,7 +70,7 @@ pub fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
 pub fn start_main(dir: String) {
     // Get the window using the builder and initialize the Window
     let b = gtk::Builder::new_from_string(include_str!("../ui/main.glade"));
-    b.get_object:: <gtk::Window>("main_window").unwrap().show_all();
+    let win: gtk::Window = b.get_object("main_window").unwrap();
     // Generate path to the userinfo file
     let mut userinfo_file = String::new();
     userinfo_file.push_str(&dir);
@@ -90,12 +91,15 @@ pub fn start_main(dir: String) {
     // Fetch the note viewer from the builder
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
     // Get the configured delete button
-    let delete_button = config_delete_buttons(&b, notes.clone(), notes_selection.clone());
+    let delete_button = config_delete_buttons(&b, notes.clone(), notes_selection.clone(),
+                                                        notes_view.clone());
     // Set the TreeView to be activated in a single click
     notes_tree.set_activate_on_single_click(true);
     // Destroy the entire process if this process is killed
     win.connect_destroy(|_| gtk::main_quit());
+    // Configure notes_tree TreeView for selection action
     notes_tree.connect_row_activated(move |_, _, _| {
+        // Set the delete button to be sensitive and display the notes content
         delete_button.set_sensitive(true);
         notes_view.set_visible(true);
         let data = view_note(notes_selection.clone());
@@ -106,4 +110,6 @@ pub fn start_main(dir: String) {
         b.get_object::<gtk::TextBuffer>("textbuffer1").unwrap()
                         .set_text(&format!("{}", data.2));
     });
+    // Show the main window
+    win.show_all();
 }

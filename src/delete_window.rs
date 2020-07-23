@@ -1,7 +1,8 @@
 use gtk::prelude::*;
 
 // Initialize the delete note window
-pub fn init_delete(notes: gtk::ListStore, notes_selection: gtk::TreeSelection) {
+pub fn init_delete(notes: gtk::ListStore, notes_selection: gtk::TreeSelection,
+    view: gtk::Box) {
     // Make the Builder from delete.glade file
     let b = gtk::Builder::new_from_string(include_str!("../ui/delete.glade"));
     // Get and show the delete Window
@@ -37,5 +38,7 @@ pub fn init_delete(notes: gtk::ListStore, notes_selection: gtk::TreeSelection) {
         }
         // Destroy the window after deleting
         delete_confirm_clone.destroy();
+        // Hide the notes content in the main view
+        view.hide();
     });
 }

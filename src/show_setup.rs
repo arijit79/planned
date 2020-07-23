@@ -68,5 +68,5 @@ pub fn show_setup(b: gtk::Builder, path: String) {
         crate::init_main(path.clone());
     } );
     // Show the window
-    window.show_all();;
+    window.show_all();
 }
