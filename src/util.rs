@@ -19,22 +19,26 @@ pub struct Note {
 
 impl Note {
     // Read a new note from the given filename
-    pub fn new(filen: &str) -> Note {
+    pub fn new(filen: &str) -> Result<Note, &str> {
         // Open the file
-        let mut f = File::open(filen).expect("Can't open file");
-        // Read the yaml data in the file
-        let mut data = String::new();
-        f.read_to_string(&mut data).expect("Error reading notes file");
+        let mut f = File::open(filen);
+        if let Ok(mut f) = f {
+            // Read the yaml data in the file
+            let mut data = String::new();
+            f.read_to_string(&mut data).expect("Error reading notes file");
 
-        // Generate a new BTreeMap from the given yaml data
-        let note: BTreeMap<String, String> = serde_yaml::from_str(&data)
-            .expect("Cannot get valid data from the notes dir");
-        // Get all fields
-        let title = note.get("title").unwrap().to_string();
-        let date = note.get("date").unwrap().to_string();
-        let content =  note.get("content").unwrap().to_string();
-        // Return the note instance
-        Note {title, date, content, filen: filen.to_string()}
+            // Generate a new BTreeMap from the given yaml data
+            let note: BTreeMap<String, String> = serde_yaml::from_str(&data)
+                .expect("Cannot get valid data from the notes dir");
+            // Get all fields
+            let title = note.get("title").unwrap().to_string();
+            let date = note.get("date").unwrap().to_string();
+            let content =  note.get("content").unwrap().to_string();
+            // Return the note instance
+            Ok(Note {title, date, content, filen: filen.to_string()})
+        } else {
+            Err("The file does not exists")
+        }
     }
     // Add a note to a ListStore
     pub fn on_list_store(&self, l: &gtk::ListStore, pos: usize) {
@@ -51,11 +55,9 @@ pub fn gen_fcode() -> u32 {
 }
 
 // Create a note file from the given data
-pub fn save(text: &str, title: &str, path: String, rand_no: u32) {
-    // Generate the file path
-    let filen = format!("{}/notes/note{}.yaml", path, rand_no);
+pub fn save(text: &str, title: &str, path: String) {
     // Create the file
-    let mut file = File::create(std::path::Path::new(&filen))
+    let mut file = File::create(std::path::Path::new(&path))
                     .expect("Cannot open file");
     // Generate today's date in a nice format
     let time = Local::now().format("%Y-%m-%d %H:%M").to_string();

@@ -20,7 +20,7 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
         let mut fn_str = String::from(&notes_dir);
         fn_str.push_str(filename.to_str().unwrap());
         // Create a new note instance from the generated filename
-        let note = Note::new(&fn_str);
+        let note = Note::new(&fn_str).unwrap();
         // Add it to the ListStore at the count position, which is an enumeration
         note.on_list_store(&l, count);
     }
@@ -34,7 +34,7 @@ fn view_note(selection: gtk::TreeSelection) ->
     // Extract the filename from the 2nd column of the ListStore
     let text = model.get_value(&iter, 2).get::<String>().unwrap();
     // Parse the note the note
-    let note = Note::new(&text.unwrap());
+    let note = Note::new(&text.unwrap()).unwrap();
     // Return the required data
     (note.title, note.date, note.content)
 }
