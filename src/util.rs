@@ -21,7 +21,7 @@ impl Note {
     // Read a new note from the given filename
     pub fn new(filen: &str) -> Result<Note, &str> {
         // Open the file
-        let mut f = File::open(filen);
+        let f = File::open(filen);
         if let Ok(mut f) = f {
             // Read the yaml data in the file
             let mut data = String::new();
