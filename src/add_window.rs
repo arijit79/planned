@@ -47,6 +47,22 @@ fn gen_filename(path: &str) -> String {
     format!("{}/notes/note{}.yaml", path, code)
 }
 
+fn configure_window(win: &gtk::Window,
+    buffer: gtk::TextBuffer,
+    src: String,
+    save_c1: Rc<RefCell<String>>) {
+    win.connect_delete_event(move |win, _| -> glib::signal::Inhibit {
+        // If there are unsaved changes, open up the confirm quit window
+        if save_c1.borrow().to_owned() != get_buffer_str(&buffer) {
+            config_confirm_quit(src.to_string(), win.to_owned());
+            glib::signal::Inhibit(true)
+        } else {
+            // The delete event has not been handled, show use the default destroy event
+            glib::signal::Inhibit(false)
+        }
+    });
+}
+
 // Initialize the add note window
 pub fn init_add(path: String, notes: gtk::ListStore) {
     let src = include_str!("../ui/add_note.glade");
@@ -66,10 +82,10 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
     // Generate the filename where note would be stored
     let filen = gen_filename(&path);
     // Variable that keeps a check whether the note is saved or not
-    let saved = Rc::new(RefCell::new(true));
+    let saved = Rc::new(RefCell::new(String::new()));
     // Make reference to be used in closures
     let save_c1 = saved.clone();
-    let save_c2 = saved.clone();
+    configure_window(&win, buffer.clone(), src.to_string(), save_c1);
 
     // Whenever the buffer changes, update status bar information
     buffer.connect_property_cursor_position_notify(move |tb| {
@@ -79,8 +95,6 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
         line_count.set_text(&format!("Lines: {}", tb.get_line_count()));
         line_no.set_text(&format!("Line: {}", text_iter.get_line()));
         col_no.set_text(&format!("Col: {}", text_iter.get_line_offset()));
-        // There are unsaved changes
-        *saved.borrow_mut() = false;
     });
     // Save button functionality
     save.connect_clicked(move |_| {
@@ -96,21 +110,10 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
         let title_str = title_gstr.as_str();
         // Save the note to a file
         crate::util::save(&string, title_str, filen.clone());
-        *save_c1.borrow_mut() = true;
+        *saved.borrow_mut() = string;
         // Add the note to the notes ListStore which is automatically taken by nNotes
         // TreeView
         crate::start_main::add_records(&notes, &path);
-    });
-
-    win.connect_delete_event(move |win, _| -> glib::signal::Inhibit {
-        // If there are unsaved changes, open up the confirm quit window
-        if !save_c2.borrow().to_owned() {
-            config_confirm_quit(src.to_string(), win.to_owned());
-            glib::signal::Inhibit(true)
-        } else {
-            // The delete event has not been handled, show use the default destroy event
-            glib::signal::Inhibit(false)
-        }
     });
     // Show the window
     win.show_all();
