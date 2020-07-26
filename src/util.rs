@@ -1,9 +1,7 @@
 // This file contains miscellaneous but important functions used in multiple
 // places throughout the program
-use chrono;
 use chrono::prelude::*;
 use gtk::prelude::*;
-use rand;
 use rand::prelude::*;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -82,7 +80,7 @@ pub fn save(text: &str, title: &str, path: String) {
 }
 
 // Get the information about the user
-pub fn get_user<'a>(file: String) -> String {
+pub fn get_user(file: String) -> String {
     // Read the given file
     let mut f = File::open(file).expect("Can't open file userinfo.yaml");
     // Create a new String and insert the yaml data of the file in it

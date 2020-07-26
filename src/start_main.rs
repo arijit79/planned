@@ -1,5 +1,4 @@
 use crate::util::Note;
-use gtk;
 use gtk::prelude::*;
 
 // Add records to a gtk ListStore
@@ -87,7 +86,7 @@ pub fn start_main(dir: String) {
     // Add data to the notes ListStore
     add_records(&notes, &dir);
     // Configure the add note button
-    config_add_button(&b, (dir.clone(), notes.clone()));
+    config_add_button(&b, (dir, notes.clone()));
     // Get the notes TreeView and TreeSelection
     let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
@@ -96,7 +95,7 @@ pub fn start_main(dir: String) {
     // Get the configured delete button
     let delete_button = config_delete_buttons(
         &b,
-        notes.clone(),
+        notes,
         notes_selection.clone(),
         notes_view.clone(),
     );
@@ -118,7 +117,7 @@ pub fn start_main(dir: String) {
             .set_text(&format!("Creation Date:\t{}", data.1));
         b.get_object::<gtk::TextBuffer>("textbuffer1")
             .unwrap()
-            .set_text(&format!("{}", data.2));
+            .set_text(&data.2);
     });
     // Show the main window
     win.show_all();

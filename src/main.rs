@@ -1,4 +1,3 @@
-use gtk;
 mod add_window;
 mod delete_window;
 mod show_setup;
@@ -43,7 +42,7 @@ fn main() {
     if !std::path::Path::new(&userinfo_path).exists() {
         let source = include_str!("../ui/setup.glade");
         let builder = gtk::Builder::new_from_string(source);
-        show_setup::show_setup(builder, config_path.clone());
+        show_setup::show_setup(builder, config_path);
     } else {
         // Else launch the main window
         init_main(config_path);

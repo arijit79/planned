@@ -1,4 +1,3 @@
-use gtk;
 use gtk::prelude::*;
 use std::collections::BTreeMap;
 use std::io::prelude::*;
@@ -20,7 +19,7 @@ fn init_user(name: &str, path: &str) {
 // Capitalize the first letter of the s String
 fn capitzlize(s: String) -> String {
     // Get the first letter of thw s String and convert it to uppercase
-    let mut string = s.chars().nth(0).unwrap().to_uppercase().to_string();
+    let mut string = s.chars().next().unwrap().to_uppercase().to_string();
     // Get an iterator to the characters of the String and move forward by one character
     // since that is what we capitalize in the previous line
     let mut chars = s.chars();
@@ -42,7 +41,7 @@ pub fn show_setup(b: gtk::Builder, path: String) {
     let env_user = std::env::var("USER").expect("Enviroment variable USER not defined");
     // Generatw a new string from by capitalizing the first letter from the user enviroment
     // variable
-    let user = String::from(capitzlize(env_user));
+    let user = capitzlize(env_user);
     // Set the text in user_entry
     user_entry.set_text(&user);
     // Get the done button

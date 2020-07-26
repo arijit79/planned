@@ -61,7 +61,6 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
     let saved = Rc::new(RefCell::new(true));
     let save_c1 = saved.clone();
     let save_c2 = saved.clone();
-    let save_c3 = saved.clone();
 
     // Whenever the buffer changes, update status bar information
     buffer.connect_property_cursor_position_notify(move |tb| {
@@ -71,7 +70,7 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
         line_count.set_text(&format!("Lines: {}", tb.get_line_count()));
         line_no.set_text(&format!("Line: {}", text_iter.get_line()));
         col_no.set_text(&format!("Col: {}", text_iter.get_line_offset()));
-        *save_c1.borrow_mut() = false;
+        *saved.borrow_mut() = false;
     });
     // Save button functionality
     save.connect_clicked(move |_| {
@@ -87,14 +86,14 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
         let title_str = title_gstr.as_str();
         // Save the note to a file
         crate::util::save(&string, title_str, filen.clone());
-        *save_c2.borrow_mut() = true;
+        *save_c1.borrow_mut() = true;
         // Add the note to the notes ListStore which is automatically taken by nNotes
         // TreeView
         crate::start_main::add_records(&notes, &path);
     });
 
     win.connect_delete_event(move |win, _| -> glib::signal::Inhibit {
-        if !save_c3.borrow().to_owned() {
+        if !save_c2.borrow().to_owned() {
             config_confirm_quit(src.to_string(), win.to_owned());
             glib::signal::Inhibit(true)
         } else {
