@@ -13,7 +13,8 @@ fn init_user(name: &str, path: &str) {
     // Create the path file, exit return if it fails to create the file
     let mut file = std::fs::File::create(path).expect("Can't create user info file");
     // Write to the file, exit return if it fails to create the file
-    file.write_all(yaml.as_bytes()).expect("Can't write data to file, userinfo.yaml");
+    file.write_all(yaml.as_bytes())
+        .expect("Can't write data to file, userinfo.yaml");
 }
 
 // Capitalize the first letter of the s String
@@ -38,8 +39,7 @@ pub fn show_setup(b: gtk::Builder, path: String) {
     let user_entry: gtk::Entry = b.get_object("user_entry").unwrap();
     // Autofill stuff. Get the USER enviroment variable and set the its value in the entry
     // just in case the user wants to use the same name as that is in its computer
-    let env_user = std::env::var("USER")
-            .expect("Enviroment variable USER not defined");
+    let env_user = std::env::var("USER").expect("Enviroment variable USER not defined");
     // Generatw a new string from by capitalizing the first letter from the user enviroment
     // variable
     let user = String::from(capitzlize(env_user));
@@ -66,7 +66,7 @@ pub fn show_setup(b: gtk::Builder, path: String) {
         w_clone.destroy();
         // Start the main program
         crate::init_main(path.clone());
-    } );
+    });
     // Show the window
     window.show_all();
 }

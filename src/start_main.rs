@@ -1,6 +1,6 @@
+use crate::util::Note;
 use gtk;
 use gtk::prelude::*;
-use crate::util::Note;
 
 // Add records to a gtk ListStore
 pub fn add_records(l: &gtk::ListStore, dir: &str) {
@@ -9,7 +9,7 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
     // Check if the notes directory exists
     let notes_dir = dir.to_string() + "/notes/";
     let path = std::path::Path::new(&notes_dir);
-    if ! path.exists() {
+    if !path.exists() {
         std::fs::create_dir(path).expect("Unable to initialize notes directory");
     }
     // Read all files in the directory
@@ -27,8 +27,7 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
 }
 
 // Function to provide info to get information from a note
-fn view_note(selection: gtk::TreeSelection) ->
-(String, String, String) {
+fn view_note(selection: gtk::TreeSelection) -> (String, String, String) {
     // Get the model and iterator from the selection
     let (model, iter) = selection.get_selected().unwrap();
     // Extract the filename from the 2nd column of the ListStore
@@ -40,16 +39,18 @@ fn view_note(selection: gtk::TreeSelection) ->
 }
 
 // Configure the delete button
-pub fn config_delete_buttons(b: &gtk::Builder, notes: gtk::ListStore,
-    notes_selection: gtk::TreeSelection, view: gtk::Box) -> gtk::ToolButton {
-
+pub fn config_delete_buttons(
+    b: &gtk::Builder,
+    notes: gtk::ListStore,
+    notes_selection: gtk::TreeSelection,
+    view: gtk::Box,
+) -> gtk::ToolButton {
     // Get the delete button from the builder
     let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
     // configure is Functionality
     delete_button.connect_clicked(move |_| {
         // Initialize the delete window
-        crate::delete_window::init_delete(notes.clone(), notes_selection.clone(),
-                                            view.clone());
+        crate::delete_window::init_delete(notes.clone(), notes_selection.clone(), view.clone());
     });
     // Return the button
     delete_button
@@ -78,7 +79,9 @@ pub fn start_main(dir: String) {
     // Get the user details from the userinfo file
     let user = crate::util::get_user(userinfo_file);
     // Set the subtitle of the window to the user's name
-    b.get_object::<gtk::HeaderBar>("titlebar").unwrap().set_subtitle(Some(&user));
+    b.get_object::<gtk::HeaderBar>("titlebar")
+        .unwrap()
+        .set_subtitle(Some(&user));
     // Get the ListStore which will contain all the notes
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     // Add data to the notes ListStore
@@ -91,8 +94,12 @@ pub fn start_main(dir: String) {
     // Fetch the note viewer from the builder
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
     // Get the configured delete button
-    let delete_button = config_delete_buttons(&b, notes.clone(), notes_selection.clone(),
-                                                        notes_view.clone());
+    let delete_button = config_delete_buttons(
+        &b,
+        notes.clone(),
+        notes_selection.clone(),
+        notes_view.clone(),
+    );
     // Set the TreeView to be activated in a single click
     notes_tree.set_activate_on_single_click(true);
     // Destroy the entire process if this process is killed
@@ -103,12 +110,15 @@ pub fn start_main(dir: String) {
         delete_button.set_sensitive(true);
         notes_view.set_visible(true);
         let data = view_note(notes_selection.clone());
-        b.get_object::<gtk::Label>("note_title").unwrap()
-                        .set_text(&format!("Note Title:\t{}", data.0));
-        b.get_object::<gtk::Label>("creation_date").unwrap()
-                        .set_text(&format!("Creation Date:\t{}", data.1));
-        b.get_object::<gtk::TextBuffer>("textbuffer1").unwrap()
-                        .set_text(&format!("{}", data.2));
+        b.get_object::<gtk::Label>("note_title")
+            .unwrap()
+            .set_text(&format!("Note Title:\t{}", data.0));
+        b.get_object::<gtk::Label>("creation_date")
+            .unwrap()
+            .set_text(&format!("Creation Date:\t{}", data.1));
+        b.get_object::<gtk::TextBuffer>("textbuffer1")
+            .unwrap()
+            .set_text(&format!("{}", data.2));
     });
     // Show the main window
     win.show_all();

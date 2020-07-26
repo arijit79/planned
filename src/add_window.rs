@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use std::{rc::Rc, cell::RefCell};
+use std::{cell::RefCell, rc::Rc};
 
 fn get_buffer_str(buff: &gtk::TextBuffer) -> String {
     // Get the start and end iterators
@@ -78,8 +78,11 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
         // Get the buffer string
         let string = get_buffer_str(&buffer);
         // Get the title entry widget's GString
-        let title_gstr = b.get_object::<gtk::Entry>("title").unwrap()
-                                                    .get_text().unwrap();
+        let title_gstr = b
+            .get_object::<gtk::Entry>("title")
+            .unwrap()
+            .get_text()
+            .unwrap();
         // Convert the GString to &str
         let title_str = title_gstr.as_str();
         // Save the note to a file
@@ -90,8 +93,8 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
         crate::start_main::add_records(&notes, &path);
     });
 
-    win.connect_delete_event(move |win,_| -> glib::signal::Inhibit {
-        if ! save_c3.borrow().to_owned() {
+    win.connect_delete_event(move |win, _| -> glib::signal::Inhibit {
+        if !save_c3.borrow().to_owned() {
             config_confirm_quit(src.to_string(), win.to_owned());
             glib::signal::Inhibit(true)
         } else {
