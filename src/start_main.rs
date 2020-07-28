@@ -1,6 +1,7 @@
-use crate::{util::Note, delete_window::init_delete};
+use crate::{delete_window::init_delete, util::Note};
 use gtk::prelude::*;
 
+// Types of toolbar buttons
 enum ToolButton {
     Delete,
     Edit,
@@ -42,6 +43,10 @@ fn view_note(selection: gtk::TreeSelection) -> (String, String, String) {
     (note.title, note.date, note.content)
 }
 
+fn get_selected_col(selection: gtk::TreeSelection) {
+
+}
+
 // Confugure the add note button
 fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
     // Get the button
@@ -62,13 +67,18 @@ fn config_tool_button(
     notes_selection: gtk::TreeSelection,
     view: gtk::Box,
     btype: ToolButton,
-) ->  gtk::ToolButton {
+) -> gtk::ToolButton {
+    // Get the button
     let button: gtk::ToolButton = b.get_object(id).unwrap();
+    // Match the ToolButton type
     match btype {
-        ToolButton::Delete => { button.connect_clicked(move |_|
-            init_delete(notes.clone(), notes_selection.clone(), view.clone()));
-        },
-
+        // If it is of delete type onfigure it with a delete function
+        ToolButton::Delete => {
+            button.connect_clicked(move |_| {
+                init_delete(notes.clone(), notes_selection.clone(), view.clone())
+            });
+        }
+        // If it is of edit type onfigure it with a edit function
         ToolButton::Edit => {
             button.connect_clicked(move |_| {
                 let (model, iter) = notes_selection.get_selected().unwrap();
@@ -108,10 +118,25 @@ pub fn start_main(dir: String) {
     // Fetch the note viewer from the builder
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
     // Get the configured delete button
-    let delete_button =
-        config_tool_button(&b, "delete_button", dir.clone(), notes.clone(), notes_selection.clone(), notes_view.clone(), ToolButton::Delete);
-    let edit_button =
-        config_tool_button(&b, "edit_button", dir.clone(), notes.clone(), notes_selection.clone(), notes_view.clone(), ToolButton::Edit);
+    let delete_button = config_tool_button(
+        &b,
+        "delete_button",
+        dir.clone(),
+        notes.clone(),
+        notes_selection.clone(),
+        notes_view.clone(),
+        ToolButton::Delete,
+    );
+    // Get the configured edit button
+    let edit_button = config_tool_button(
+        &b,
+        "edit_button",
+        dir.clone(),
+        notes.clone(),
+        notes_selection.clone(),
+        notes_view.clone(),
+        ToolButton::Edit,
+    );
     // Set the TreeView to be activated in a single click
     notes_tree.set_activate_on_single_click(true);
     // Destroy the entire process if this process is killed

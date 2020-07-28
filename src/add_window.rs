@@ -47,7 +47,7 @@ fn gen_filename(path: &str) -> String {
     loop {
         let code = crate::util::gen_fcode();
         filen = format!("{}/notes/note{}.yaml", path, code);
-        if ! std::path::Path::new(&filen).exists() {
+        if !std::path::Path::new(&filen).exists() {
             break;
         } else {
             continue;
