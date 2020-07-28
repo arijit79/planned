@@ -1,5 +1,10 @@
-use crate::util::Note;
+use crate::{util::Note, delete_window::init_delete};
 use gtk::prelude::*;
+
+enum ToolButton {
+    Delete,
+    Edit,
+}
 
 // Add records to a gtk ListStore
 pub fn add_records(l: &gtk::ListStore, dir: &str) {
@@ -37,33 +42,43 @@ fn view_note(selection: gtk::TreeSelection) -> (String, String, String) {
     (note.title, note.date, note.content)
 }
 
-// Configure the delete button
-pub fn config_delete_buttons(
-    b: &gtk::Builder,
-    notes: gtk::ListStore,
-    notes_selection: gtk::TreeSelection,
-    view: gtk::Box,
-) -> gtk::ToolButton {
-    // Get the delete button from the builder
-    let delete_button: gtk::ToolButton = b.get_object("delete_button").unwrap();
-    // configure is Functionality
-    delete_button.connect_clicked(move |_| {
-        // Initialize the delete window
-        crate::delete_window::init_delete(notes.clone(), notes_selection.clone(), view.clone());
-    });
-    // Return the button
-    delete_button
-}
-
 // Confugure the add note button
-pub fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
+fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
     // Get the button
     let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
     // Configure the windw
     add_button.connect_clicked(move |_| {
         // Initialize the add ote window
-        crate::add_window::init_add(data.0.clone(), data.1.clone());
+        crate::add_window::init_add(data.0.clone(), data.1.clone(), None);
     });
+}
+
+// Configure toolbar buttons
+fn config_tool_button(
+    b: &gtk::Builder,
+    id: &str,
+    path: String,
+    notes: gtk::ListStore,
+    notes_selection: gtk::TreeSelection,
+    view: gtk::Box,
+    btype: ToolButton,
+) ->  gtk::ToolButton {
+    let button: gtk::ToolButton = b.get_object(id).unwrap();
+    match btype {
+        ToolButton::Delete => { button.connect_clicked(move |_|
+            init_delete(notes.clone(), notes_selection.clone(), view.clone()));
+        },
+
+        ToolButton::Edit => {
+            button.connect_clicked(move |_| {
+                let (model, iter) = notes_selection.get_selected().unwrap();
+                let filen = model.get_value(&iter, 2).get::<String>().unwrap();
+                let note = Note::new(&filen.unwrap()).unwrap();
+                crate::add_window::init_add(path.clone(), notes.clone(), Some(note));
+            });
+        }
+    }
+    button
 }
 
 // Start the main window
@@ -86,19 +101,17 @@ pub fn start_main(dir: String) {
     // Add data to the notes ListStore
     add_records(&notes, &dir);
     // Configure the add note button
-    config_add_button(&b, (dir, notes.clone()));
+    config_add_button(&b, (dir.clone(), notes.clone()));
     // Get the notes TreeView and TreeSelection
     let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
     // Fetch the note viewer from the builder
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
     // Get the configured delete button
-    let delete_button = config_delete_buttons(
-        &b,
-        notes,
-        notes_selection.clone(),
-        notes_view.clone(),
-    );
+    let delete_button =
+        config_tool_button(&b, "delete_button", dir.clone(), notes.clone(), notes_selection.clone(), notes_view.clone(), ToolButton::Delete);
+    let edit_button =
+        config_tool_button(&b, "edit_button", dir.clone(), notes.clone(), notes_selection.clone(), notes_view.clone(), ToolButton::Edit);
     // Set the TreeView to be activated in a single click
     notes_tree.set_activate_on_single_click(true);
     // Destroy the entire process if this process is killed
@@ -107,6 +120,7 @@ pub fn start_main(dir: String) {
     notes_tree.connect_row_activated(move |_, _, _| {
         // Set the delete button to be sensitive and display the notes content
         delete_button.set_sensitive(true);
+        edit_button.set_sensitive(true);
         notes_view.set_visible(true);
         let data = view_note(notes_selection.clone());
         b.get_object::<gtk::Label>("note_title")

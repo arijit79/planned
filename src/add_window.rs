@@ -43,14 +43,25 @@ fn gen_filename(path: &str) -> String {
     // Generate a unique id for the note, will be used for its filename
     // Do it here because, if the user saves a note twice, it should not generate
     // two different codes
-    let code = crate::util::gen_fcode();
-    format!("{}/notes/note{}.yaml", path, code)
+    let mut filen;
+    loop {
+        let code = crate::util::gen_fcode();
+        filen = format!("{}/notes/note{}.yaml", path, code);
+        if ! std::path::Path::new(&filen).exists() {
+            break;
+        } else {
+            continue;
+        }
+    }
+    filen
 }
 
-fn configure_window(win: &gtk::Window,
+fn configure_window(
+    win: &gtk::Window,
     buffer: gtk::TextBuffer,
     src: String,
-    save_c1: Rc<RefCell<String>>) {
+    save_c1: Rc<RefCell<String>>,
+) {
     win.connect_delete_event(move |win, _| -> glib::signal::Inhibit {
         // If there are unsaved changes, open up the confirm quit window
         if save_c1.borrow().to_owned() != get_buffer_str(&buffer) {
@@ -63,13 +74,15 @@ fn configure_window(win: &gtk::Window,
     });
 }
 
-// Initialize the add note window
-pub fn init_add(path: String, notes: gtk::ListStore) {
+// Initialize the add/edit note window
+pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::Note>) {
     let src = include_str!("../ui/add_note.glade");
     // Make the Builder from add_note.glade file
     let b = gtk::Builder::new_from_string(src);
     // Get the window
     let win: gtk::Window = b.get_object("add_window").unwrap();
+    // Get the title entry widget's GString
+    let title: gtk::Entry = b.get_object("title").unwrap();
     // Get the buffer and save button from the file
     let buffer: gtk::TextBuffer = b.get_object("textbuffer1").unwrap();
     let save: gtk::Button = b.get_object("save_button").unwrap();
@@ -79,13 +92,29 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
     let char_count: gtk::Label = b.get_object("char_count").unwrap();
     let word_count: gtk::Label = b.get_object("word_count").unwrap();
     let line_count: gtk::Label = b.get_object("line_count").unwrap();
-    // Generate the filename where note would be stored
-    let filen = gen_filename(&path);
+    // A filename where the note will be stored
+    let filen;
     // Variable that keeps a check whether the note is saved or not
     let saved = Rc::new(RefCell::new(String::new()));
     // Make reference to be used in closures
     let save_c1 = saved.clone();
     configure_window(&win, buffer.clone(), src.to_string(), save_c1);
+
+    // Check if a note is given, if present means configure to be a edit Window
+    if let Some(n) = note {
+        // Set the title and buffer
+        buffer.set_text(&n.content);
+        title.set_text(&n.title);
+        // Set the contents of saved string to be the buffer text
+        *saved.borrow_mut() = n.content;
+        // Set the filename
+        filen = n.filen;
+        // Reset the text selection done due to setting of title
+        title.grab_focus_without_selecting();
+    } else {
+        // If no note is given, get a random filename
+        filen = gen_filename(&path);
+    }
 
     // Whenever the buffer changes, update status bar information
     buffer.connect_property_cursor_position_notify(move |tb| {
@@ -100,14 +129,9 @@ pub fn init_add(path: String, notes: gtk::ListStore) {
     save.connect_clicked(move |_| {
         // Get the buffer string
         let string = get_buffer_str(&buffer);
-        // Get the title entry widget's GString
-        let title_gstr = b
-            .get_object::<gtk::Entry>("title")
-            .unwrap()
-            .get_text()
-            .unwrap();
         // Convert the GString to &str
-        let title_str = title_gstr.as_str();
+        let title_gst = title.get_text().unwrap();
+        let title_str = title_gst.as_str();
         // Save the note to a file
         crate::util::save(&string, title_str, filen.clone());
         *saved.borrow_mut() = string;

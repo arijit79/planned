@@ -84,6 +84,21 @@
                             <property name="homogeneous">True</property>
                           </packing>
                         </child>
+                        <child>
+                          <object class="GtkToolButton" id="edit_button">
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">False</property>
+                            <property name="is_important">True</property>
+                            <property name="label" translatable="yes">Edit</property>
+                            <property name="use_underline">True</property>
+                            <property name="icon_name">document-open</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
