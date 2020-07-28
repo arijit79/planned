@@ -33,18 +33,19 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
 
 // Function to provide info to get information from a note
 fn view_note(selection: gtk::TreeSelection) -> (String, String, String) {
-    // Get the model and iterator from the selection
-    let (model, iter) = selection.get_selected().unwrap();
-    // Extract the filename from the 2nd column of the ListStore
-    let text = model.get_value(&iter, 2).get::<String>().unwrap();
+    get_selected_col(selection, 2);
     // Parse the note the note
     let note = Note::new(&text.unwrap()).unwrap();
     // Return the required data
     (note.title, note.date, note.content)
 }
 
-fn get_selected_col(selection: gtk::TreeSelection) {
-
+fn get_selected_col(selection: gtk::TreeSelection, index: u32) -> String {
+    // Get the model and iterator from the selection
+    let (model, iter) = selection.get_selected().unwrap();
+    // Extract the text from the nth column of the model
+    let col = model.get_value(&iter, index).get::<String>().unwrap();
+    col.unwrap()
 }
 
 // Confugure the add note button
@@ -81,8 +82,7 @@ fn config_tool_button(
         // If it is of edit type onfigure it with a edit function
         ToolButton::Edit => {
             button.connect_clicked(move |_| {
-                let (model, iter) = notes_selection.get_selected().unwrap();
-                let filen = model.get_value(&iter, 2).get::<String>().unwrap();
+                let filen = get_selected_col(&notes_selection, 2);
                 let note = Note::new(&filen.unwrap()).unwrap();
                 crate::add_window::init_add(path.clone(), notes.clone(), Some(note));
             });
