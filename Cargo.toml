@@ -10,8 +10,8 @@ license = "MIT"
 [dependencies]
 serde_yaml = "0.8.13"
 rand = "0.7.3"
-chrono = "*"
-glib = "*"
+chrono = "0.4.13"
+glib = "0.9.3"
 
 [dependencies.gtk]
 version = "0.8.1"
