@@ -33,14 +33,14 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
 
 // Function to provide info to get information from a note
 fn view_note(selection: gtk::TreeSelection) -> (String, String, String) {
-    get_selected_col(selection, 2);
+    let text = get_selected_col(selection, 2);
     // Parse the note the note
-    let note = Note::new(&text.unwrap()).unwrap();
+    let note = Note::new(&text).unwrap();
     // Return the required data
     (note.title, note.date, note.content)
 }
 
-fn get_selected_col(selection: gtk::TreeSelection, index: u32) -> String {
+fn get_selected_col(selection: gtk::TreeSelection, index: i32) -> String {
     // Get the model and iterator from the selection
     let (model, iter) = selection.get_selected().unwrap();
     // Extract the text from the nth column of the model
@@ -61,7 +61,7 @@ fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
 
 // Configure toolbar buttons
 fn config_tool_button(
-    b: &gtk::Builder,
+    b: gtk::Builder,
     id: &str,
     path: String,
     notes: gtk::ListStore,
@@ -82,13 +82,27 @@ fn config_tool_button(
         // If it is of edit type onfigure it with a edit function
         ToolButton::Edit => {
             button.connect_clicked(move |_| {
-                let filen = get_selected_col(&notes_selection, 2);
-                let note = Note::new(&filen.unwrap()).unwrap();
+                let filen = get_selected_col(notes_selection.clone(), 2);
+                let note = Note::new(&filen).unwrap();
                 crate::add_window::init_add(path.clone(), notes.clone(), Some(note));
+                view.hide();
             });
         }
     }
     button
+}
+
+fn update_note_view(b: gtk::Builder, selection: gtk::TreeSelection) {
+    let data = view_note(selection);
+    b.get_object::<gtk::Label>("note_title")
+        .unwrap()
+        .set_text(&format!("Note Title:\t{}", data.0));
+    b.get_object::<gtk::Label>("creation_date")
+        .unwrap()
+        .set_text(&format!("Creation Date:\t{}", data.1));
+    b.get_object::<gtk::TextBuffer>("textbuffer1")
+        .unwrap()
+        .set_text(&data.2);
 }
 
 // Start the main window
@@ -119,7 +133,7 @@ pub fn start_main(dir: String) {
     let notes_view: gtk::Box = b.get_object("notes_view").unwrap();
     // Get the configured delete button
     let delete_button = config_tool_button(
-        &b,
+        b.clone(),
         "delete_button",
         dir.clone(),
         notes.clone(),
@@ -129,7 +143,7 @@ pub fn start_main(dir: String) {
     );
     // Get the configured edit button
     let edit_button = config_tool_button(
-        &b,
+        b.clone(),
         "edit_button",
         dir.clone(),
         notes.clone(),
@@ -147,16 +161,7 @@ pub fn start_main(dir: String) {
         delete_button.set_sensitive(true);
         edit_button.set_sensitive(true);
         notes_view.set_visible(true);
-        let data = view_note(notes_selection.clone());
-        b.get_object::<gtk::Label>("note_title")
-            .unwrap()
-            .set_text(&format!("Note Title:\t{}", data.0));
-        b.get_object::<gtk::Label>("creation_date")
-            .unwrap()
-            .set_text(&format!("Creation Date:\t{}", data.1));
-        b.get_object::<gtk::TextBuffer>("textbuffer1")
-            .unwrap()
-            .set_text(&data.2);
+        update_note_view(b.clone(), notes_selection.clone())
     });
     // Show the main window
     win.show_all();
