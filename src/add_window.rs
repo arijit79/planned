@@ -85,7 +85,7 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
     let title: gtk::Entry = b.get_object("title").unwrap();
     // Get the buffer and save button from the file
     let buffer: gtk::TextBuffer = b.get_object("textbuffer1").unwrap();
-    let save: gtk::Button = b.get_object("save_button").unwrap();
+    let save: gtk::ToolButton = b.get_object("save_button").unwrap();
     // Get all status bar labels for word count, character count etc
     let line_no: gtk::Label = b.get_object("line_no").unwrap();
     let col_no: gtk::Label = b.get_object("col_no").unwrap();
@@ -141,4 +141,10 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
     });
     // Show the window
     win.show_all();
+    // Configure the discard button
+    b.get_object::<gtk::ToolButton>("discard_button").unwrap().connect_clicked(move |_|
+        {
+            win.destroy();
+        }
+    );
 }
