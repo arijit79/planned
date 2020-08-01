@@ -145,8 +145,8 @@ pub fn start_main(dir: String) {
     let edit_button = config_tool_button(
         b.clone(),
         "edit_button",
-        dir.clone(),
-        notes.clone(),
+        dir,
+        notes,
         notes_selection.clone(),
         notes_view.clone(),
         ToolButton::Edit,

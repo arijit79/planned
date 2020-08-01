@@ -54,6 +54,19 @@ impl Note {
     }
 }
 
+
+#[derive(Clone)]
+pub struct Content {
+    pub title: String,
+    pub body: String
+}
+
+impl PartialEq for Content {
+    fn eq(&self, other: &Self) -> bool {
+        self.title == other.title && self.body == other.body
+    }
+}
+
 // Generate a random number that is an u32
 pub fn gen_fcode() -> u32 {
     let mut rng = rand::thread_rng();
@@ -62,16 +75,16 @@ pub fn gen_fcode() -> u32 {
 }
 
 // Create a note file from the given data
-pub fn save(text: &str, title: &str, path: String) {
+pub fn save(content: Content, path: String) {
     // Create the file
     let mut file = File::create(std::path::Path::new(&path)).expect("Cannot open file");
     // Generate today's date in a nice format
     let time = Local::now().format("%Y-%m-%d %H:%M").to_string();
     // Generate the new BTreeMap and insert the provided data
-    let mut map: BTreeMap<&str, &str> = BTreeMap::new();
-    map.insert("title", title);
-    map.insert("content", text);
-    map.insert("date", &time);
+    let mut map: BTreeMap<&str, String> = BTreeMap::new();
+    map.insert("title", content.title);
+    map.insert("content", content.body);
+    map.insert("date", time);
     // Generate a new yaml from the BTrreMap
     let yaml = serde_yaml::to_string(&map).unwrap();
     // Write the data yo thr file

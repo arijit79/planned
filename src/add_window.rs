@@ -1,5 +1,6 @@
 use gtk::prelude::*;
 use std::{cell::RefCell, rc::Rc};
+use crate::util::Content;
 
 fn get_buffer_str(buff: &gtk::TextBuffer) -> String {
     // Get the start and end iterators
@@ -56,15 +57,20 @@ fn gen_filename(path: &str) -> String {
     filen
 }
 
+#[allow(clippy::cmp_owned)]
 fn configure_window(
     win: &gtk::Window,
     buffer: gtk::TextBuffer,
+    title: gtk::Entry,
     src: String,
-    save_c1: Rc<RefCell<String>>,
+    save_c1: Rc<RefCell<Content>>,
 ) {
     win.connect_delete_event(move |win, _| -> glib::signal::Inhibit {
         // If there are unsaved changes, open up the confirm quit window
-        if save_c1.borrow().to_owned() != get_buffer_str(&buffer) {
+        let gstr = title.get_text().unwrap();
+        let string = gstr.as_str().to_string();
+        let state = Content{title: string, body: get_buffer_str(&buffer)};
+        if save_c1.borrow().to_owned() != state {
             config_confirm_quit(src.to_string(), win.to_owned());
             glib::signal::Inhibit(true)
         } else {
@@ -95,10 +101,10 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
     // A filename where the note will be stored
     let filen;
     // Variable that keeps a check whether the note is saved or not
-    let saved = Rc::new(RefCell::new(String::new()));
+    let saved = Rc::new(RefCell::new(Content{title: String::new(), body: String::new()}));
     // Make reference to be used in closures
     let save_c1 = saved.clone();
-    configure_window(&win, buffer.clone(), src.to_string(), save_c1);
+    configure_window(&win, buffer.clone(), title.clone(), src.to_string(), save_c1);
 
     // Check if a note is given, if present means configure to be a edit Window
     if let Some(n) = note {
@@ -106,7 +112,8 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
         buffer.set_text(&n.content);
         title.set_text(&n.title);
         // Set the contents of saved string to be the buffer text
-        *saved.borrow_mut() = n.content;
+        saved.borrow_mut().body = n.content;
+        saved.borrow_mut().title = n.title;
         // Set the filename
         filen = n.filen;
         // Reset the text selection done due to setting of title
@@ -132,9 +139,10 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
         // Convert the GString to &str
         let title_gst = title.get_text().unwrap();
         let title_str = title_gst.as_str();
+        saved.borrow_mut().body = string;
+        saved.borrow_mut().title = title_str.to_string();
         // Save the note to a file
-        crate::util::save(&string, title_str, filen.clone());
-        *saved.borrow_mut() = string;
+        crate::util::save(saved.borrow().to_owned(), filen.clone());
         // Add the note to the notes ListStore which is automatically taken by nNotes
         // TreeView
         crate::start_main::add_records(&notes, &path);
