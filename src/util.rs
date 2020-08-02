@@ -54,13 +54,14 @@ impl Note {
     }
 }
 
-
+// Defines the contents of the add window
 #[derive(Clone)]
 pub struct Content {
     pub title: String,
     pub body: String
 }
 
+// Overload the eq method for correctly checking if other content is equal
 impl PartialEq for Content {
     fn eq(&self, other: &Self) -> bool {
         self.title == other.title && self.body == other.body

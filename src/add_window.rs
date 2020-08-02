@@ -67,14 +67,18 @@ fn configure_window(
 ) {
     win.connect_delete_event(move |win, _| -> glib::signal::Inhibit {
         // If there are unsaved changes, open up the confirm quit window
+        // Get the title
         let gstr = title.get_text().unwrap();
         let string = gstr.as_str().to_string();
+        // Generate a content struct with title and buffer data
         let state = Content{title: string, body: get_buffer_str(&buffer)};
+        // Check if the last saved content is the same as the generated content
         if save_c1.borrow().to_owned() != state {
+            // If not, show confirm quit window
             config_confirm_quit(src.to_string(), win.to_owned());
             glib::signal::Inhibit(true)
         } else {
-            // The delete event has not been handled, show use the default destroy event
+            // The delete event has not been handled, so use the default destroy event
             glib::signal::Inhibit(false)
         }
     });
@@ -100,10 +104,11 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
     let line_count: gtk::Label = b.get_object("line_count").unwrap();
     // A filename where the note will be stored
     let filen;
-    // Variable that keeps a check whether the note is saved or not
+    // Variable that keeps a copy of last saved data
     let saved = Rc::new(RefCell::new(Content{title: String::new(), body: String::new()}));
     // Make reference to be used in closures
     let save_c1 = saved.clone();
+    // Configure the window
     configure_window(&win, buffer.clone(), title.clone(), src.to_string(), save_c1);
 
     // Check if a note is given, if present means configure to be a edit Window
@@ -111,7 +116,7 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
         // Set the title and buffer
         buffer.set_text(&n.content);
         title.set_text(&n.title);
-        // Set the contents of saved string to be the buffer text
+        // Set the last saved to be the file's current data
         saved.borrow_mut().body = n.content;
         saved.borrow_mut().title = n.title;
         // Set the filename
@@ -136,9 +141,10 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
     save.connect_clicked(move |_| {
         // Get the buffer string
         let string = get_buffer_str(&buffer);
-        // Convert the GString to &str
+        // Get the title's data amd convert the GString to &str
         let title_gst = title.get_text().unwrap();
         let title_str = title_gst.as_str();
+        // Update the saved content accordingly
         saved.borrow_mut().body = string;
         saved.borrow_mut().title = title_str.to_string();
         // Save the note to a file
