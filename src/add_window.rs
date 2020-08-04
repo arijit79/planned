@@ -2,6 +2,8 @@ use gtk::prelude::*;
 use std::{cell::RefCell, rc::Rc};
 use crate::util::Content;
 
+// Newline
+
 fn get_buffer_str(buff: &gtk::TextBuffer) -> String {
     // Get the start and end iterators
     let start = buff.get_start_iter();

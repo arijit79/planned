@@ -6,12 +6,15 @@ use rand::prelude::*;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::prelude::*;
+use serde::{Serialize, Deserialize};
 
 // A note struct, abstractly describes a note
+#[derive(Serialize, Deserialize)]
 pub struct Note {
     pub title: String,
     pub date: String,
     pub content: String,
+    pub tags: Vec<String>,
     pub filen: String,
 }
 
@@ -27,19 +30,9 @@ impl Note {
                 .expect("Error reading notes file");
 
             // Generate a new BTreeMap from the given yaml data
-            let note: BTreeMap<String, String> =
+            let note: Note =
                 serde_yaml::from_str(&data).expect("Cannot get valid data from the notes dir");
-            // Get all fields
-            let title = note.get("title").unwrap().to_string();
-            let date = note.get("date").unwrap().to_string();
-            let content = note.get("content").unwrap().to_string();
-            // Return the note instance
-            Ok(Note {
-                title,
-                date,
-                content,
-                filen: filen.to_string(),
-            })
+            Ok(note)
         } else {
             Err("The file does not exists")
         }
@@ -81,13 +74,16 @@ pub fn save(content: Content, path: String) {
     let mut file = File::create(std::path::Path::new(&path)).expect("Cannot open file");
     // Generate today's date in a nice format
     let time = Local::now().format("%Y-%m-%d %H:%M").to_string();
-    // Generate the new BTreeMap and insert the provided data
-    let mut map: BTreeMap<&str, String> = BTreeMap::new();
-    map.insert("title", content.title);
-    map.insert("content", content.body);
-    map.insert("date", time);
-    // Generate a new yaml from the BTrreMap
-    let yaml = serde_yaml::to_string(&map).unwrap();
+    // Generate the new Note and insert the provided data
+    let note = Note {
+        title: content.title,
+        date: time,
+        content: content.body,
+        filen: path,
+        tags: vec!["important".to_string()]
+    };
+    // Generate a new yaml from the Note
+    let yaml = serde_yaml::to_string(&note).unwrap();
     // Write the data yo thr file
     file.write_all(yaml.as_bytes())
         .expect("Cannot write to file");
