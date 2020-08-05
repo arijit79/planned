@@ -39,11 +39,14 @@ impl Note {
     }
     // Add a note to a ListStore
     pub fn on_list_store(&self, l: &gtk::ListStore, pos: usize) {
+        let mut tags_str = String::new();
+        for tag in &self.tags {
+            tags_str.push_str(&tag);
+        }
         l.insert_with_values(
             Some(pos as u32),
-            &[0, 1, 2],
-            &[&self.title, &self.date, &self.filen],
-        );
+            &[0, 1, 2, 3],
+            &[&self.title, &self.date, &tags_str, &self.filen]);
     }
 }
 

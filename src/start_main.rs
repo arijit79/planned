@@ -33,14 +33,16 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
 
 // Function to provide info to get information from a note
 fn view_note(selection: gtk::TreeSelection) -> (String, String, String) {
-    let text = get_selected_col(selection, 2);
+    let text = get_selected_filename(selection);
     // Parse the note the note
     let note = Note::new(&text).unwrap();
     // Return the required data
     (note.title, note.date, note.content)
 }
 
-fn get_selected_col(selection: gtk::TreeSelection, index: i32) -> String {
+fn get_selected_filename(selection: gtk::TreeSelection) -> String {
+    // Column where filename is tored
+    let index = 3;
     // Get the model and iterator from the selection
     let (model, iter) = selection.get_selected().unwrap();
     // Extract the text from the nth column of the model
@@ -82,7 +84,7 @@ fn config_tool_button(
         // If it is of edit type onfigure it with a edit function
         ToolButton::Edit => {
             button.connect_clicked(move |_| {
-                let filen = get_selected_col(notes_selection.clone(), 2);
+                let filen = get_selected_filename(notes_selection.clone());
                 let note = Note::new(&filen).unwrap();
                 crate::add_window::init_add(path.clone(), notes.clone(), Some(note));
                 view.hide();

@@ -27,7 +27,7 @@ pub fn init_delete(notes: gtk::ListStore, notes_selection: gtk::TreeSelection, v
         // Get the model and iter using the notes_selection TreeSelection
         let (model, iter) = notes_selection.get_selected().unwrap();
         // Get the value from the model and get the String out of it
-        let text = model.get_value(&iter, 2).get::<String>().unwrap();
+        let text = model.get_value(&iter, 3).get::<String>().unwrap();
         // Remove it from the notes ListStore
         notes.remove(&iter);
         // Remove the note file
