@@ -2,7 +2,7 @@ use gtk::prelude::*;
 use std::{cell::RefCell, rc::Rc};
 use crate::util::Content;
 
-// Newline
+use std::path::PathBuf;
 
 fn get_buffer_str(buff: &gtk::TextBuffer) -> String {
     // Get the start and end iterators
@@ -42,15 +42,18 @@ fn config_confirm_quit(src: String, parent: gtk::Window) {
     close_parent.connect_clicked(move |_| parent.destroy());
 }
 
-fn gen_filename(path: &str) -> String {
+fn gen_filename(path: &PathBuf) -> PathBuf {
     // Generate a unique id for the note, will be used for its filename
     // Do it here because, if the user saves a note twice, it should not generate
     // two different codes
-    let mut filen;
+    let filen;
     loop {
+        let mut dir = PathBuf::from(path);
         let code = crate::util::gen_fcode();
-        filen = format!("{}/notes/note{}.yaml", path, code);
-        if !std::path::Path::new(&filen).exists() {
+        dir.push(format!("note{}.yaml", code));
+
+        if !dir.exists() {
+            filen = dir;
             break;
         } else {
             continue;
@@ -87,7 +90,12 @@ fn configure_window(
 }
 
 // Initialize the add/edit note window
-pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::Note>) {
+pub fn init_add(mut path: PathBuf,
+    notes: gtk::ListStore,
+    note: Option<crate::util::Note>)
+{
+    // Generate path to the notes dir
+    path.push("notes");
     let src = include_str!("../ui/add_note.glade");
     // Make the Builder from add_note.glade file
     let b = gtk::Builder::new_from_string(src);
@@ -153,7 +161,7 @@ pub fn init_add(path: String, notes: gtk::ListStore, note: Option<crate::util::N
         crate::util::save(saved.borrow().to_owned(), filen.clone());
         // Add the note to the notes ListStore which is automatically taken by nNotes
         // TreeView
-        crate::start_main::add_records(&notes, &path);
+        crate::start_main::add_records(&notes, path.clone());
     });
     // Show the window
     win.show_all();

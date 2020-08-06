@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use std::io::prelude::*;
 
 // write the name to the path using YAML
-fn init_user(name: &str, path: &str) {
+fn init_user(name: &str, path: std::path::PathBuf) {
     // Generatw a new BTreeMap and insert key for user with value name
     let mut map = BTreeMap::new();
     map.insert("user", name);
@@ -31,7 +31,7 @@ fn capitzlize(s: String) -> String {
     string
 }
 
-pub fn show_setup(b: gtk::Builder, path: String) {
+pub fn show_setup(b: gtk::Builder, path: std::path::PathBuf) {
     // Get the window and start displaying it
     let window: gtk::Window = b.get_object("user_setup").unwrap();
     // Get the username entry field
@@ -55,12 +55,11 @@ pub fn show_setup(b: gtk::Builder, path: String) {
         let gstr = user_entry.get_text().unwrap();
         // Create the configuration directory
         let _ = std::fs::create_dir(path.clone());
-        // Create a string containing the path to the userinfo file
-        let mut userinfo = String::new();
-        userinfo.push_str(&path);
-        userinfo.push_str("/userinfo.yaml");
+        // Generate the userinfo.yaml path
+        let mut userinfo_yaml = path.clone();
+        userinfo_yaml.set_file_name("userinfo.yaml");
         // Put all necessory details using the init_user function
-        init_user(gstr.as_str(), &userinfo);
+        init_user(gstr.as_str(), userinfo_yaml);
         // Destroy the window
         w_clone.destroy();
         // Start the main program

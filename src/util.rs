@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::prelude::*;
 use serde::{Serialize, Deserialize};
+use std::path::PathBuf;
 
 // A note struct, abstractly describes a note
 #[derive(Serialize, Deserialize)]
@@ -15,12 +16,12 @@ pub struct Note {
     pub date: String,
     pub content: String,
     pub tags: Vec<String>,
-    pub filen: String,
+    pub filen: PathBuf,
 }
 
 impl Note {
     // Read a new note from the given filename
-    pub fn new(filen: &str) -> Result<Note, &str> {
+    pub fn new(filen: PathBuf) -> Result<Note, &'static str> {
         // Open the file
         let f = File::open(filen);
         if let Ok(mut f) = f {
@@ -43,10 +44,11 @@ impl Note {
         for tag in &self.tags {
             tags_str.push_str(&tag);
         }
+        let file_str = self.filen.to_str().unwrap();
         l.insert_with_values(
             Some(pos as u32),
             &[0, 1, 2, 3],
-            &[&self.title, &self.date, &tags_str, &self.filen]);
+            &[&self.title, &self.date, &tags_str, &file_str]);
     }
 }
 
@@ -72,7 +74,8 @@ pub fn gen_fcode() -> u32 {
 }
 
 // Create a note file from the given data
-pub fn save(content: Content, path: String) {
+pub fn save(content: Content, path: PathBuf) {
+    println!("{}", path.display());
     // Create the file
     let mut file = File::create(std::path::Path::new(&path)).expect("Cannot open file");
     // Generate today's date in a nice format
@@ -93,7 +96,7 @@ pub fn save(content: Content, path: String) {
 }
 
 // Get the information about the user
-pub fn get_user(file: String) -> String {
+pub fn get_user(file: std::path::PathBuf) -> String {
     // Read the given file
     let mut f = File::open(file).expect("Can't open file userinfo.yaml");
     // Create a new String and insert the yaml data of the file in it

@@ -1,5 +1,6 @@
 use crate::{delete_window::init_delete, util::Note};
 use gtk::prelude::*;
+use std::path::PathBuf;
 
 // Types of toolbar buttons
 enum ToolButton {
@@ -8,26 +9,29 @@ enum ToolButton {
 }
 
 // Add records to a gtk ListStore
-pub fn add_records(l: &gtk::ListStore, dir: &str) {
+pub fn add_records(l: &gtk::ListStore, mut dir: PathBuf) {
     // Clear the ListBox, just in case it isen't
     l.clear();
     // Check if the notes directory exists
-    let notes_dir = dir.to_string() + "/notes/";
-    let path = std::path::Path::new(&notes_dir);
-    if !path.exists() {
-        std::fs::create_dir(path).expect("Unable to initialize notes directory");
-    }
-    // Read all files in the directory
-    for (count, file) in std::fs::read_dir(path).unwrap().enumerate() {
-        // Get the filename
-        let filename = file.unwrap().file_name();
-        // Convert the filename to a String
-        let mut fn_str = String::from(&notes_dir);
-        fn_str.push_str(filename.to_str().unwrap());
-        // Create a new note instance from the generated filename
-        let note = Note::new(&fn_str).unwrap();
-        // Add it to the ListStore at the count position, which is an enumeration
-        note.on_list_store(&l, count);
+    dir.push("notes");
+    if !dir.exists() {
+        std::fs::create_dir(dir).expect("Unable to initialize notes directory");
+    } else {
+        // Read all files in the directory
+        for (count, file) in std::fs::read_dir(&dir).unwrap().enumerate() {
+            // Get the relative filename of the file in respect to the data dir
+            // Get the OsString and convert it into &str
+            let rel_ostr = file.unwrap().file_name();
+            let relative_file = rel_ostr.to_str().unwrap();
+            // Generate the filename
+            let mut filename = PathBuf::new();
+            filename.push(&dir);
+            filename.set_file_name(relative_file);
+            // Create a new note instance from the generated filename
+            let note = Note::new(filename).unwrap();
+            // Add it to the ListStore at the count position, which is an enumeration
+            note.on_list_store(&l, count);
+        }
     }
 }
 
@@ -35,7 +39,7 @@ pub fn add_records(l: &gtk::ListStore, dir: &str) {
 fn view_note(selection: gtk::TreeSelection) -> (String, String, String) {
     let text = get_selected_filename(selection);
     // Parse the note the note
-    let note = Note::new(&text).unwrap();
+    let note = Note::new(PathBuf::from(text)).unwrap();
     // Return the required data
     (note.title, note.date, note.content)
 }
@@ -51,7 +55,7 @@ fn get_selected_filename(selection: gtk::TreeSelection) -> String {
 }
 
 // Confugure the add note button
-fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
+fn config_add_button(b: &gtk::Builder, data: (PathBuf, gtk::ListStore)) {
     // Get the button
     let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
     // Configure the windw
@@ -65,7 +69,7 @@ fn config_add_button(b: &gtk::Builder, data: (String, gtk::ListStore)) {
 fn config_tool_button(
     b: gtk::Builder,
     id: &str,
-    path: String,
+    path: PathBuf,
     notes: gtk::ListStore,
     notes_selection: gtk::TreeSelection,
     view: gtk::Box,
@@ -85,7 +89,7 @@ fn config_tool_button(
         ToolButton::Edit => {
             button.connect_clicked(move |_| {
                 let filen = get_selected_filename(notes_selection.clone());
-                let note = Note::new(&filen).unwrap();
+                let note = Note::new(PathBuf::from(filen)).unwrap();
                 crate::add_window::init_add(path.clone(), notes.clone(), Some(note));
                 view.hide();
             });
@@ -108,14 +112,13 @@ fn update_note_view(b: gtk::Builder, selection: gtk::TreeSelection) {
 }
 
 // Start the main window
-pub fn start_main(dir: String) {
+pub fn start_main(dir: std::path::PathBuf) {
     // Get the window using the builder and initialize the Window
     let b = gtk::Builder::new_from_string(include_str!("../ui/main.glade"));
     let win: gtk::Window = b.get_object("main_window").unwrap();
     // Generate path to the userinfo file
-    let mut userinfo_file = String::new();
-    userinfo_file.push_str(&dir);
-    userinfo_file.push_str("/userinfo.yaml");
+    let mut userinfo_file = std::path::PathBuf::from(&dir);
+    userinfo_file.set_file_name("userinfo.yaml");
     // Get the user details from the userinfo file
     let user = crate::util::get_user(userinfo_file);
     // Set the subtitle of the window to the user's name
@@ -125,7 +128,7 @@ pub fn start_main(dir: String) {
     // Get the ListStore which will contain all the notes
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     // Add data to the notes ListStore
-    add_records(&notes, &dir);
+    add_records(&notes, dir.clone());
     // Configure the add note button
     config_add_button(&b, (dir.clone(), notes.clone()));
     // Get the notes TreeView and TreeSelection
