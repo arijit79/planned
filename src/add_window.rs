@@ -111,6 +111,9 @@ pub fn init_add(path: PathBuf,
     let char_count: gtk::Label = b.get_object("char_count").unwrap();
     let word_count: gtk::Label = b.get_object("word_count").unwrap();
     let line_count: gtk::Label = b.get_object("line_count").unwrap();
+    let tags_button: gtk::MenuToolButton = b.get_object("manage_tags_button").unwrap();
+    let tags_menu: gtk::Menu = b.get_object("manage_tags_menu").unwrap();
+    tags_button.set_menu(&tags_menu);
     // A filename where the note will be stored
     let filen;
     // Variable that keeps a copy of last saved data
@@ -160,7 +163,7 @@ pub fn init_add(path: PathBuf,
         crate::util::save(saved.borrow().to_owned(), filen.clone());
         // Add the note to the notes ListStore which is automatically taken by nNotes
         // TreeView
-        crate::start_main::add_records(&notes, path.clone());
+        crate::start_main::refresh_ui(&notes, path.clone());
     });
     // Show the window
     win.show_all();

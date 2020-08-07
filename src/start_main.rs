@@ -9,7 +9,7 @@ enum ToolButton {
 }
 
 // Add records to a gtk ListStore
-pub fn add_records(l: &gtk::ListStore, mut dir: PathBuf) {
+pub fn refresh_ui(l: &gtk::ListStore, mut dir: PathBuf) {
     // Clear the ListBox, just in case it isen't
     l.clear();
     // Check if the notes directory exists
@@ -128,7 +128,7 @@ pub fn start_main(dir: std::path::PathBuf) {
     // Get the ListStore which will contain all the notes
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     // Add data to the notes ListStore
-    add_records(&notes, dir.clone());
+    refresh_ui(&notes, dir.clone());
     // Configure the add note button
     config_add_button(&b, (dir.clone(), notes.clone()));
     // Get the notes TreeView and TreeSelection

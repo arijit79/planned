@@ -102,6 +102,10 @@
       <placeholder/>
     </child>
   </object>
+  <object class="GtkMenu" id="manage_tags_menu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+  </object>
   <object class="GtkTextBuffer" id="textbuffer1"/>
   <object class="GtkWindow" id="add_window">
     <property name="can_focus">False</property>
@@ -184,6 +188,18 @@
                     <property name="label" translatable="yes">Discard</property>
                     <property name="use_underline">True</property>
                     <property name="icon_name">dialog-close</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkMenuToolButton" id="manage_tags_button">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Manage Tags</property>
+                    <property name="use_underline">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
