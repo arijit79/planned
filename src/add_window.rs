@@ -50,6 +50,7 @@ fn gen_filename(path: &PathBuf) -> PathBuf {
     loop {
         let mut dir = PathBuf::from(path);
         let code = crate::util::gen_fcode();
+        dir.push("notes");
         dir.push(format!("note{}.yaml", code));
 
         if !dir.exists() {
@@ -90,12 +91,10 @@ fn configure_window(
 }
 
 // Initialize the add/edit note window
-pub fn init_add(mut path: PathBuf,
+pub fn init_add(path: PathBuf,
     notes: gtk::ListStore,
     note: Option<crate::util::Note>)
 {
-    // Generate path to the notes dir
-    path.push("notes");
     let src = include_str!("../ui/add_note.glade");
     // Make the Builder from add_note.glade file
     let b = gtk::Builder::new_from_string(src);

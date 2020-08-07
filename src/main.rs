@@ -25,7 +25,6 @@ fn main() {
 
     let mut userinfo_yaml = PathBuf::from(&data_dir);
     userinfo_yaml.push("userinfo.yaml");
-    println!("{}", userinfo_yaml.display());
 
     // If the userinfo.yaml file does not exist, launch the user setup screen
     if !userinfo_yaml.exists() {

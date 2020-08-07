@@ -26,7 +26,7 @@ pub fn add_records(l: &gtk::ListStore, mut dir: PathBuf) {
             // Generate the filename
             let mut filename = PathBuf::new();
             filename.push(&dir);
-            filename.set_file_name(relative_file);
+            filename.push(relative_file);
             // Create a new note instance from the generated filename
             let note = Note::new(filename).unwrap();
             // Add it to the ListStore at the count position, which is an enumeration
@@ -118,7 +118,7 @@ pub fn start_main(dir: std::path::PathBuf) {
     let win: gtk::Window = b.get_object("main_window").unwrap();
     // Generate path to the userinfo file
     let mut userinfo_file = std::path::PathBuf::from(&dir);
-    userinfo_file.set_file_name("userinfo.yaml");
+    userinfo_file.push("userinfo.yaml");
     // Get the user details from the userinfo file
     let user = crate::util::get_user(userinfo_file);
     // Set the subtitle of the window to the user's name

@@ -75,7 +75,6 @@ pub fn gen_fcode() -> u32 {
 
 // Create a note file from the given data
 pub fn save(content: Content, path: PathBuf) {
-    println!("{}", path.display());
     // Create the file
     let mut file = File::create(std::path::Path::new(&path)).expect("Cannot open file");
     // Generate today's date in a nice format

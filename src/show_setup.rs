@@ -57,7 +57,7 @@ pub fn show_setup(b: gtk::Builder, path: std::path::PathBuf) {
         let _ = std::fs::create_dir(path.clone());
         // Generate the userinfo.yaml path
         let mut userinfo_yaml = path.clone();
-        userinfo_yaml.set_file_name("userinfo.yaml");
+        userinfo_yaml.push("userinfo.yaml");
         // Put all necessory details using the init_user function
         init_user(gstr.as_str(), userinfo_yaml);
         // Destroy the window
