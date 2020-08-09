@@ -1,6 +1,7 @@
 use crate::{delete_window::init_delete, util::Note};
 use gtk::prelude::*;
 use std::path::PathBuf;
+use std::collections::HashMap;
 
 // Types of toolbar buttons
 enum ToolButton {
@@ -8,10 +9,64 @@ enum ToolButton {
     Edit,
 }
 
+fn init_tag_page(
+    stack: &gtk::Stack,
+    tag: &str,
+    note: &crate::util::Note,
+    list_map: &mut HashMap<String, gtk::ListStore>,
+) {
+    let page = stack.get_child_by_name(tag);
+     if let Some(p) = page {
+         let liststore = list_map.get(format!("list-{}", tag).as_str()).unwrap();
+         let n = liststore.get_n_columns();
+         note.on_list_store(&liststore, 0);
+     } else {
+         // Initialize the list store data type
+         let liststore_dtype = [glib::Type::String, glib::Type::String, glib::Type::String, glib::Type::String];
+         // Initialize the list store and tree view
+         let liststore = gtk::ListStore::new(&liststore_dtype);
+         let tree = gtk::TreeView::new();
+         // Initialize the Tree columns and their renderers
+         let text = gtk::TreeViewColumn::new();
+         let date = gtk::TreeViewColumn::new();
+         let tags = gtk::TreeViewColumn::new();
+         let text_render = gtk::CellRendererText::new();
+         let date_render = gtk::CellRendererText::new();
+         let tags_render = gtk::CellRendererText::new();
+
+         // Add list store to the tree
+         tree.set_model(Some(&liststore));
+         // Configure the 1st column by adding title, area and associate its renderer
+         text.set_title("Title");
+         text.pack_start(&text_render, true);
+         text.add_attribute(&text_render, "text", 0);
+         // Configure the 2nd column by adding title, area and associate its renderer
+         date.set_title("Date");
+         date.pack_start(&date_render, true);
+         date.add_attribute(&date_render, "text", 1);
+         // Configure the 3rs column by adding title, area and associate its renderer
+         tags.set_title("Tags");
+         tags.pack_start(&tags_render, true);
+         tags.add_attribute(&tags_render, "text", 2);
+         // Add the columns to the tree
+         tree.append_column(&text);
+         tree.append_column(&date);
+         tree.append_column(&tags);
+         // Add the note to the liststore
+         let n = liststore.get_n_columns();
+         note.on_list_store(&liststore, 0);
+         // Add the treeview to the stack
+         stack.add_titled(&tree, tag, tag);
+         list_map.insert(&format!("list-{}", tag), liststore);
+     }
+}
+
 // Add records to a gtk ListStore
-pub fn refresh_ui(l: &gtk::ListStore, mut dir: PathBuf) {
+pub fn refresh_ui(l: &gtk::ListStore, mut dir: PathBuf, tag_stack: gtk::Stack) -> Vec<String> {
     // Clear the ListBox, just in case it isen't
     l.clear();
+    // Vector of available tags
+    let mut tags: Vec<String> = Vec::new();
     // Check if the notes directory exists
     dir.push("notes");
     if !dir.exists() {
@@ -28,11 +83,21 @@ pub fn refresh_ui(l: &gtk::ListStore, mut dir: PathBuf) {
             filename.push(&dir);
             filename.push(relative_file);
             // Create a new note instance from the generated filename
-            let note = Note::new(filename).unwrap();
+            let note = &Note::new(filename).unwrap();
             // Add it to the ListStore at the count position, which is an enumeration
             note.on_list_store(&l, count);
+            for tag in note.tags.iter() {
+                tags.push(tag.to_string())
+            }
+            let mut list_map: HashMap<String, gtk::ListStore> = HashMap::new();
+            for tag in tags.iter() {
+                if note.tags.contains(tag) {
+                    init_tag_page(&tag_stack, tag, note, &mut list_map);
+                }
+            }
         }
     }
+    tags
 }
 
 // Function to provide info to get information from a note
@@ -55,13 +120,13 @@ fn get_selected_filename(selection: gtk::TreeSelection) -> String {
 }
 
 // Confugure the add note button
-fn config_add_button(b: &gtk::Builder, data: (PathBuf, gtk::ListStore)) {
+fn config_add_button(b: &gtk::Builder, data: (PathBuf, gtk::ListStore, gtk::Stack)) {
     // Get the button
     let add_button: gtk::ToolButton = b.get_object("add_note").unwrap();
     // Configure the windw
     add_button.connect_clicked(move |_| {
         // Initialize the add ote window
-        crate::add_window::init_add(data.0.clone(), data.1.clone(), None);
+        crate::add_window::init_add(data.0.clone(), data.1.clone(), None, data.2.clone());
     });
 }
 
@@ -74,6 +139,7 @@ fn config_tool_button(
     notes_selection: gtk::TreeSelection,
     view: gtk::Box,
     btype: ToolButton,
+    tag_stack: gtk::Stack,
 ) -> gtk::ToolButton {
     // Get the button
     let button: gtk::ToolButton = b.get_object(id).unwrap();
@@ -90,7 +156,7 @@ fn config_tool_button(
             button.connect_clicked(move |_| {
                 let filen = get_selected_filename(notes_selection.clone());
                 let note = Note::new(PathBuf::from(filen)).unwrap();
-                crate::add_window::init_add(path.clone(), notes.clone(), Some(note));
+                crate::add_window::init_add(path.clone(), notes.clone(), Some(note), tag_stack.clone());
                 view.hide();
             });
         }
@@ -127,10 +193,11 @@ pub fn start_main(dir: std::path::PathBuf) {
         .set_subtitle(Some(&user));
     // Get the ListStore which will contain all the notes
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
+    let tag_stack: gtk::Stack = b.get_object("stack1").unwrap();
     // Add data to the notes ListStore
-    refresh_ui(&notes, dir.clone());
+    let tags = refresh_ui(&notes, dir.clone(), tag_stack.clone());
     // Configure the add note button
-    config_add_button(&b, (dir.clone(), notes.clone()));
+    config_add_button(&b, (dir.clone(), notes.clone(), tag_stack.clone() ));
     // Get the notes TreeView and TreeSelection
     let notes_tree: gtk::TreeView = b.get_object("notes_tree").unwrap();
     let notes_selection: gtk::TreeSelection = b.get_object("notes_tree_selection").unwrap();
@@ -145,6 +212,7 @@ pub fn start_main(dir: std::path::PathBuf) {
         notes_selection.clone(),
         notes_view.clone(),
         ToolButton::Delete,
+        tag_stack.clone()
     );
     // Get the configured edit button
     let edit_button = config_tool_button(
@@ -155,6 +223,7 @@ pub fn start_main(dir: std::path::PathBuf) {
         notes_selection.clone(),
         notes_view.clone(),
         ToolButton::Edit,
+        tag_stack.clone()
     );
     // Set the TreeView to be activated in a single click
     notes_tree.set_activate_on_single_click(true);

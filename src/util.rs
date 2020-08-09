@@ -40,8 +40,11 @@ impl Note {
     }
     // Add a note to a ListStore
     pub fn on_list_store(&self, l: &gtk::ListStore, pos: usize) {
-        let mut tags_str = String::new();
-        for tag in &self.tags {
+        let mut tags_str = String::from(&self.tags[0]);
+        let mut tag_iter = self.tags.iter();
+        tag_iter.next();
+        for tag in tag_iter {
+            tags_str.push_str("\t");
             tags_str.push_str(&tag);
         }
         let file_str = self.filen.to_str().unwrap();

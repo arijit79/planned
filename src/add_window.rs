@@ -93,7 +93,8 @@ fn configure_window(
 // Initialize the add/edit note window
 pub fn init_add(path: PathBuf,
     notes: gtk::ListStore,
-    note: Option<crate::util::Note>)
+    note: Option<crate::util::Note>,
+    tag_stack: gtk::Stack)
 {
     let src = include_str!("../ui/add_note.glade");
     // Make the Builder from add_note.glade file
@@ -163,7 +164,7 @@ pub fn init_add(path: PathBuf,
         crate::util::save(saved.borrow().to_owned(), filen.clone());
         // Add the note to the notes ListStore which is automatically taken by nNotes
         // TreeView
-        crate::start_main::refresh_ui(&notes, path.clone());
+        crate::start_main::refresh_ui(&notes, path.clone(), tag_stack.clone());
     });
     // Show the window
     win.show_all();
