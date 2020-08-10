@@ -16,10 +16,10 @@ fn init_tag_page(
     list_map: &mut HashMap<String, gtk::ListStore>,
 ) {
     let page = stack.get_child_by_name(tag);
-     if let Some(p) = page {
+     if let Some(_) = page {
          let liststore = list_map.get(format!("list-{}", tag).as_str()).unwrap();
          let n = liststore.get_n_columns();
-         note.on_list_store(&liststore, 0);
+         note.on_list_store(&liststore, n as usize);
      } else {
          // Initialize the list store data type
          let liststore_dtype = [glib::Type::String, glib::Type::String, glib::Type::String, glib::Type::String];
@@ -53,20 +53,20 @@ fn init_tag_page(
          tree.append_column(&date);
          tree.append_column(&tags);
          // Add the note to the liststore
-         let n = liststore.get_n_columns();
          note.on_list_store(&liststore, 0);
          // Add the treeview to the stack
          stack.add_titled(&tree, tag, tag);
-         list_map.insert(&format!("list-{}", tag), liststore);
+         list_map.insert(format!("list-{}", tag), liststore);
      }
 }
 
 // Add records to a gtk ListStore
-pub fn refresh_ui(l: &gtk::ListStore, mut dir: PathBuf, tag_stack: gtk::Stack) -> Vec<String> {
+pub fn refresh_ui(l: &gtk::ListStore, mut dir: PathBuf, 
+    tag_stack: gtk::Stack) -> HashMap<String, gtk::ListStore> {
     // Clear the ListBox, just in case it isen't
     l.clear();
     // Vector of available tags
-    let mut tags: Vec<String> = Vec::new();
+    let mut list_map: HashMap<String, gtk::ListStore> = HashMap::new();
     // Check if the notes directory exists
     dir.push("notes");
     if !dir.exists() {
@@ -87,17 +87,11 @@ pub fn refresh_ui(l: &gtk::ListStore, mut dir: PathBuf, tag_stack: gtk::Stack) -
             // Add it to the ListStore at the count position, which is an enumeration
             note.on_list_store(&l, count);
             for tag in note.tags.iter() {
-                tags.push(tag.to_string())
-            }
-            let mut list_map: HashMap<String, gtk::ListStore> = HashMap::new();
-            for tag in tags.iter() {
-                if note.tags.contains(tag) {
-                    init_tag_page(&tag_stack, tag, note, &mut list_map);
-                }
+                init_tag_page(&tag_stack, tag, note, &mut list_map);
             }
         }
     }
-    tags
+    list_map
 }
 
 // Function to provide info to get information from a note
@@ -195,7 +189,7 @@ pub fn start_main(dir: std::path::PathBuf) {
     let notes: gtk::ListStore = b.get_object("notes_list").unwrap();
     let tag_stack: gtk::Stack = b.get_object("stack1").unwrap();
     // Add data to the notes ListStore
-    let tags = refresh_ui(&notes, dir.clone(), tag_stack.clone());
+    let tags_map = refresh_ui(&notes, dir.clone(), tag_stack.clone());
     // Configure the add note button
     config_add_button(&b, (dir.clone(), notes.clone(), tag_stack.clone() ));
     // Get the notes TreeView and TreeSelection
