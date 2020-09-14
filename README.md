@@ -1,3 +1,5 @@
+# The repository for Planned is archived. Devlopment of planned will continue when better graphical libraries are available for Rust
+
 # Planned: An open-source, cross-platform personal productivity tool
 Planned is an open-source, cross-platform application to help you increase your productivity by providing a lot of features so that can help you work efficiently. Here are some of the goals of the project
 
